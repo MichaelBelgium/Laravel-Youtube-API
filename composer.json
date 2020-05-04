@@ -11,9 +11,11 @@
         "php": "^7.2.5",
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^1.0",
+        "google/apiclient": "^2.4",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
-        "laravel/tinker": "^2.0"
+        "laravel/tinker": "^2.0",
+        "norkunas/youtube-dl-php": "^1.6"
     },
     "require-dev": {
         "facade/ignition": "^2.0",
