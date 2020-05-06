@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
@@ -97,5 +98,36 @@ class ApiController extends Controller
         {
             return new Response(['error' => true, 'message' => $e->getMessage()]);
         }
+    }
+
+    public function remove(Request $request, string $id)
+    {
+        $formats = $request->get('format', self::POSSIBLE_FORMATS);
+        $removedFiles = [];
+
+        if(!is_array($formats)) {
+            $formats = [$formats];
+        }
+
+        foreach($formats as $format) {
+            $localFile = $id.".".$format;
+            if(Storage::disk('public')->exists($localFile)) {
+                Storage::disk('public')->delete($id.".".$format);
+                $removedFiles[] = $format;
+            }
+        }
+
+        $resultNotRemoved = array_diff(self::POSSIBLE_FORMATS, $removedFiles);
+
+        if(empty($removedFiles))
+            $message = 'No files removed.';
+        else
+            $message = 'Removed files: ' . implode(', ', $removedFiles) . '.';
+
+        if(!empty($resultNotRemoved))
+            $message .= ' Not removed: ' . implode(', ', $resultNotRemoved);
+
+        
+        return new JsonResponse(['error' => false, 'message' => $message]);
     }
 }
