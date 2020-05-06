@@ -14,4 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/convert', 'ApiController@convert');Route::delete('/ytconverter/{id}', 'ApiController@remove');
+Route::post('/ytconverter/convert', 'ApiController@convert');
+Route::delete('/ytconverter/{id}', 'ApiController@remove');
