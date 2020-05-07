@@ -13,4 +13,9 @@ You can install the package via composer:
 composer require michaelbelgium/laravel-youtube-api
 ```
 
+In case you want to edit the config you can publish the config file:
+```bash
+php artisan vendor:publish --tag=laravel-youtube-api
+```
+
 ## Usage
