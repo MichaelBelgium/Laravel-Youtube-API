@@ -13,9 +13,11 @@ class YoutubeAPIServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->publishes([
-            __DIR__ . '/config/youtube-api.php' => config_path('youtube-api.php')
-        ]);
+        if($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../config/youtube-api.php' => config_path('youtube-api.php')
+            ], 'youtube-api-config');
+        }
 
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
     }
