@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use Google_Client;
+use Google_Service_YouTube;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Http\JsonResponse;
@@ -132,5 +134,51 @@ class ApiController extends Controller
 
         
         return new JsonResponse(['error' => false, 'message' => $message]);
+    }
+
+    public function search(Request $request, string $q)
+    {
+        if(empty(env('GOOGLE_API_KEY'))) {
+            return new JsonResponse(['error' => true, 'message' => 'No google api specified']);
+        }
+
+        $max_results = $request->get('max_results', config('ytconverter.search_max_results'));
+
+        $gClient = new Google_Client();
+        $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
+
+        $guzzleClient = new Client([
+            RequestOptions::HEADERS => [
+                'referer' => env('APP_URL')
+            ]
+        ]);
+        $gClient->setHttpClient($guzzleClient);
+
+        $ytService = new Google_Service_YouTube($gClient);
+
+        try {
+            $search = $ytService->search->listSearch('id,snippet', [
+                'q' => $q,
+                'maxResults' => $max_results,
+                'type' => 'video'
+            ]);
+
+            $results = [];
+
+            foreach ($search['items'] as $searchResult)
+            {
+                $results[] = array(
+                    'id' => $searchResult['id']['videoId'],
+                    'channel' => $searchResult['snippet']['channelTitle'],
+                    'title' => $searchResult['snippet']['title'],
+                    'full_link' => 'https://youtube.com/watch?v='.$searchResult['id']['videoId']
+                );
+            }
+
+            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results]);
+        } catch (Exception $ex) {
+            $errorObj = json_decode($ex->getMessage());
+            return new JsonResponse(['error' => true, 'message' => $errorObj->error->message], 422);
+        }
     }
 }
