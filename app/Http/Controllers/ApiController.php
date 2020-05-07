@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use YoutubeDl\YoutubeDl;
 
@@ -27,11 +30,11 @@ class ApiController extends Controller
             return new Response(['error' => true, 'message' => 'No video id specified'], 422);
 
         $id = $matches[0];
-        $downloadFolder = storage_path('app/public') . '/'; //create symbolic link (php artisan storage:link)
-
+        $downloadFolder = config('ytconverter.download.path');
+        $maxLength = config('ytconverter.download.max_length');
         $exists = file_exists($downloadFolder.$id.".".$format);
 
-        if(env('DOWNLOAD_MAX_LENGTH', 0) > 0 || $exists)
+        if($maxLength > 0 || $exists)
         {
             $dl = new YoutubeDl(['skip-download' => true]);
             $dl->setDownloadPath($downloadFolder);
@@ -39,8 +42,8 @@ class ApiController extends Controller
             try	{
                 $video = $dl->download($url);
         
-                if($video->getDuration() > env('DOWNLOAD_MAX_LENGTH', 0) && env('DOWNLOAD_MAX_LENGTH', 0) > 0)
-                    return new Response(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is ".env('DOWNLOAD_MAX_LENGTH', 0)." seconds."]);
+                if($video->getDuration() > $maxLength && $maxLength > 0)
+                    return new Response(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."]);
             }
             catch (Exception $ex)
             {
@@ -110,9 +113,9 @@ class ApiController extends Controller
         }
 
         foreach($formats as $format) {
-            $localFile = $id.".".$format;
-            if(Storage::disk('public')->exists($localFile)) {
-                Storage::disk('public')->delete($id.".".$format);
+            $localFile = config('ytconverter.download.path').$id.".".$format;
+            if(File::exists($localFile)) {
+                File::delete($localFile);
                 $removedFiles[] = $format;
             }
         }
