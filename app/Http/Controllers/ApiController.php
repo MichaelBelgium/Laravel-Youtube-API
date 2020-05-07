@@ -105,7 +105,7 @@ class ApiController extends Controller
         }
     }
 
-    public function remove(Request $request, string $id)
+    public function delete(Request $request, string $id)
     {
         $formats = $request->get('format', self::POSSIBLE_FORMATS);
         $removedFiles = [];
