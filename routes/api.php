@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-    'prefix' => 'ytconverter',
+    'prefix' => config('youtube-api.route_prefix', 'ytconverter'),
     'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers'
 ], function() {
     Route::post('/convert', 'ApiController@convert');
