@@ -2,10 +2,12 @@
 
 namespace MichaelBelgium\YoutubeAPI;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class YoutubeAPIServiceProvider extends ServiceProvider
 {
+
     /**
      * Bootstrap the application services.
      */
@@ -14,6 +16,8 @@ class YoutubeAPIServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/config/youtube-api.php' => config_path('youtube-api.php')
         ]);
+
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
     }
 
     /**
