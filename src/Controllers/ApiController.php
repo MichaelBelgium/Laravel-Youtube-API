@@ -2,6 +2,10 @@
 namespace MichaelBelgium\YoutubeAPI\Controllers;
 
 use Exception;
+use Google_Client;
+use Google_Service_YouTube;
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -105,8 +109,12 @@ class ApiController extends Controller
 
     public function delete(Request $request, string $id)
     {
+        if(config('youtube-api') === null) {
+            return new JsonResponse(['error' => true, 'message' => 'Please publish the config file by running \'php artisan vendor:publish --tag=youtube-api-config.\''], 422);
+        }
+
         $removedFiles = [];
-        
+
         foreach(self::POSSIBLE_FORMATS as $format) {
             $localFile = config('youtube-api.download.path').$id.".".$format;
             if(File::exists($localFile)) {
@@ -128,8 +136,55 @@ class ApiController extends Controller
         return new JsonResponse(['error' => false, 'message' => $message]);
     }
 
-    public function search()
+    public function search(Request $request, string $q)
     {
+        if(empty(env('GOOGLE_API_KEY'))) {
+            return new JsonResponse(['error' => true, 'message' => 'No google api specified']);
+        }
 
+        if(config('youtube-api') === null) {
+            return new JsonResponse(['error' => true, 'message' => 'Please publish the config file by running \'php artisan vendor:publish --tag=youtube-api-config.\''], 422);
+        }
+
+        $max_results = $request->get('max_results', config('youtube-api.search_max_results'));
+
+        $gClient = new Google_Client();
+        $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
+
+        $guzzleClient = new Client([
+            RequestOptions::HEADERS => [
+                'referer' => env('APP_URL')
+            ]
+        ]);
+
+        $gClient->setHttpClient($guzzleClient);
+
+        $ytService = new Google_Service_YouTube($gClient);
+
+        try {
+            $search = $ytService->search->listSearch('id,snippet', [
+                'q' => $q,
+                'maxResults' => $max_results,
+                'type' => 'video'
+            ]);
+
+            $results = [];
+
+            foreach ($search['items'] as $searchResult)
+            {
+                $results[] = array(
+                    'id' => $searchResult['id']['videoId'],
+                    'channel' => $searchResult['snippet']['channelTitle'],
+                    'title' => $searchResult['snippet']['title'],
+                    'full_link' => 'https://youtube.com/watch?v='.$searchResult['id']['videoId']
+                );
+            }
+
+            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results]);
+            
+        } catch (Exception $ex) {
+            $errorObj = json_decode($ex->getMessage());
+            return new JsonResponse(['error' => true, 'message' => $errorObj->error->message], 422);
+        }
     }
 }
