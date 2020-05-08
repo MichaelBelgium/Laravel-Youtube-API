@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
@@ -32,16 +33,15 @@ class ApiController extends Controller
         if(config('youtube-api') === null) {
             return new JsonResponse(['error' => true, 'message' => 'Please publish the config file by running \'php artisan vendor:publish --tag=youtube-api-config.\''], 422);
         }
-
+        
         $id = $matches[0];
-        $downloadFolder = config('youtube-api.download.path');
         $maxLength = config('youtube-api.download.max_length');
-        $exists = File::exists($downloadFolder.$id.".".$format);
+        $exists = File::exists($this->getDownloadPath($id.".".$format));
 
         if($maxLength > 0 || $exists)
         {
             $dl = new YoutubeDl(['skip-download' => true]);
-            $dl->setDownloadPath($downloadFolder);
+            $dl->setDownloadPath($this->getDownloadPath());
         
             try	{
                 $video = $dl->download($url);
@@ -77,18 +77,17 @@ class ApiController extends Controller
             }
 
             $dl = new YoutubeDl($options);
-            $dl->setDownloadPath($downloadFolder);
+            $dl->setDownloadPath($this->getDownloadPath());
         }
 
         try
         {
-            $fullUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/storage/";
             if($exists)
-                $file = $fullUrl.$id.".".$format;
+                $file = $this->getDownloadUrl($id.".".$format);
             else
             {
                 $video = $dl->download($url);
-                $file = $fullUrl.$video->getFilename();
+                $file = $this->getDownloadUrl($video->getFilename());
             }
 
             return new JsonResponse([
@@ -116,7 +115,8 @@ class ApiController extends Controller
         $removedFiles = [];
 
         foreach(self::POSSIBLE_FORMATS as $format) {
-            $localFile = config('youtube-api.download.path').$id.".".$format;
+            $localFile = $this->getDownloadPath($id.'.'.$format);
+
             if(File::exists($localFile)) {
                 File::delete($localFile);
                 $removedFiles[] = $format;
@@ -186,5 +186,15 @@ class ApiController extends Controller
             $errorObj = json_decode($ex->getMessage());
             return new JsonResponse(['error' => true, 'message' => $errorObj->error->message], 422);
         }
+    }
+
+    private function getDownloadPath(string $file = '')
+    {
+        return Storage::disk('public')->path($file);
+    }
+
+    private function getDownloadUrl(string $file = '')
+    {
+        return Storage::disk('public')->url($file);
     }
 }
