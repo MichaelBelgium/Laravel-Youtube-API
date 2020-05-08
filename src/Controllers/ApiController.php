@@ -12,7 +12,8 @@ class ApiController extends Controller
 {
     const POSSIBLE_FORMATS = ['mp3', 'mp4'];
 
-    public function convert(Request $request) {
+    public function convert(Request $request)
+    {
         $url = $request->get('url');
         $format = $request->get('format', 'mp3');
 
@@ -102,11 +103,33 @@ class ApiController extends Controller
         }
     }
 
-    public function delete() {
+    public function delete(Request $request, string $id)
+    {
+        $removedFiles = [];
+        
+        foreach(self::POSSIBLE_FORMATS as $format) {
+            $localFile = config('youtube-api.download.path').$id.".".$format;
+            if(File::exists($localFile)) {
+                File::delete($localFile);
+                $removedFiles[] = $format;
+            }
+        }
 
+        $resultNotRemoved = array_diff(self::POSSIBLE_FORMATS, $removedFiles);
+
+        if(empty($removedFiles))
+            $message = 'No files removed.';
+        else
+            $message = 'Removed files: ' . implode(', ', $removedFiles) . '.';
+
+        if(!empty($resultNotRemoved))
+            $message .= ' Not removed: ' . implode(', ', $resultNotRemoved);
+
+        return new JsonResponse(['error' => false, 'message' => $message]);
     }
 
-    public function search() {
+    public function search()
+    {
 
     }
 }
