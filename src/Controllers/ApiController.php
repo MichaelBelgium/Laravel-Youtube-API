@@ -47,11 +47,11 @@ class ApiController extends Controller
                 $video = $dl->download($url);
         
                 if($video->getDuration() > $maxLength && $maxLength > 0)
-                    return new JsonResponse(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."]);
+                    return new JsonResponse(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], 422);
             }
             catch (Exception $ex)
             {
-                return new JsonResponse(['error' => true, 'message' => $ex->getMessage()]);
+                return new JsonResponse(['error' => true, 'message' => $ex->getMessage()], 422);
             }
         }
 
@@ -139,7 +139,7 @@ class ApiController extends Controller
     public function search(Request $request, string $q)
     {
         if(empty(env('GOOGLE_API_KEY'))) {
-            return new JsonResponse(['error' => true, 'message' => 'No google api specified']);
+            return new JsonResponse(['error' => true, 'message' => 'No google api specified'], 422);
         }
 
         if(config('youtube-api') === null) {
@@ -180,7 +180,7 @@ class ApiController extends Controller
                 );
             }
 
-            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results]);
+            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results], 422);
             
         } catch (Exception $ex) {
             $errorObj = json_decode($ex->getMessage());
