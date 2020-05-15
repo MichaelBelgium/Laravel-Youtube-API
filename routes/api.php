@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-    'prefix' => config('youtube-api.route_prefix', 'ytconverter'),
+    'prefix' => 'api/' . config('youtube-api.route_prefix', 'ytconverter'),
     'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
     'middleware' => 'api'
 ], function() {
