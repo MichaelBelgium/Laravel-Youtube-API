@@ -19,7 +19,7 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             ], 'youtube-api-config');
         }
 
-        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+        $this->loadRoutes();
     }
 
     /**
@@ -28,5 +28,15 @@ class YoutubeAPIServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__.'/../config/youtube-api.php', 'laravel-youtube-api');
+    }
+
+    private function loadRoutes() {
+        Route::group([
+            'prefix' => 'api/' . config('youtube-api.route_prefix', 'ytconverter'),
+            'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
+            'middleware' => 'api'
+        ], function() {
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+        });
     }
 }
