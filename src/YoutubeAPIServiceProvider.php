@@ -19,6 +19,7 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             ], 'youtube-api-config');
         }
 
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'youtube-api-views');
         $this->loadRoutes();
     }
 
@@ -37,6 +38,14 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             'middleware' => 'api'
         ], function() {
             $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+        });
+
+        Route::group([
+            'prefix' => config('youtube-api.route_prefix', 'ytconverter'),
+            'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
+            'middleware' => 'web'
+        ], function() {
+            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         });
     }
 }
