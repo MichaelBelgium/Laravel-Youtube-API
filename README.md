@@ -13,7 +13,7 @@ This package provides a simple youtube api for your Laravel application. It is b
 composer require michaelbelgium/laravel-youtube-api
 ```
 
-* Publish the config file and edit if u like:
+* Optional: publish the config file and edit if u like:
 ```bash
 php artisan vendor:publish --tag=youtube-api-config
 ```
