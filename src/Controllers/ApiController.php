@@ -31,7 +31,7 @@ class ApiController extends Controller
             return new JsonResponse(['error' => true, 'message' => 'No video id specified'], 422);
         
         $id = $matches[0];
-        $maxLength = config('youtube-api.download.max_length', 0);
+        $maxLength = config('youtube-api.download_max_length', 0);
         $exists = File::exists($this->getDownloadPath($id.".".$format));
 
         if($maxLength > 0 || $exists)

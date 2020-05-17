@@ -14,9 +14,7 @@ return [
     
     'route_prefix' => 'ytconverter',
 
-    'download' => [
-        'max_length' => 0,
-    ],
+    'download_max_length' => 0,
 
     'search_max_results' => 10
 ];
