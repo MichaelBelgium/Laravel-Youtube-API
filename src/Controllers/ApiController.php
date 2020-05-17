@@ -9,8 +9,11 @@ use GuzzleHttp\RequestOptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
@@ -19,18 +22,21 @@ class ApiController extends Controller
 
     public function convert(Request $request)
     {
-        $url = $request->get('url');
-        $format = $request->get('format', 'mp3');
+        $validator = Validator::make($request->all(), [
+            'url' => ['required', 'string', 'url', 'regex:#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#'],
+            'format' => [Rule::in(ApiController::POSSIBLE_FORMATS)]
+        ]);
 
-        if(!in_array($format, self::POSSIBLE_FORMATS))
-            return new JsonResponse(['error' => true, 'message' => 'Invalid format (choose between '. implode(', ', self::POSSIBLE_FORMATS). ')'], 422);
+        if($validator->fails()) {
+            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], 422);
+        }
 
-        $success = preg_match('#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#', $url, $matches);
+        $url = Arr::get($validator->validated(), 'url');
+        $format = Arr::get($validator->validated(), 'format', 'mp3');
 
-        if(!$success)
-            return new JsonResponse(['error' => true, 'message' => 'No video id specified'], 422);
-        
-        $id = $matches[0];
+        parse_str(parse_url($url, PHP_URL_QUERY), $queryvars);
+
+        $id = $queryvars['v'];
         $maxLength = config('youtube-api.download_max_length', 0);
         $exists = File::exists($this->getDownloadPath($id.".".$format));
 
