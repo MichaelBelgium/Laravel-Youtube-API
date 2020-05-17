@@ -29,13 +29,9 @@ class ApiController extends Controller
 
         if(!$success)
             return new JsonResponse(['error' => true, 'message' => 'No video id specified'], 422);
-
-        if(config('youtube-api') === null) {
-            return new JsonResponse(['error' => true, 'message' => 'Please publish the config file by running \'php artisan vendor:publish --tag=youtube-api-config.\''], 422);
-        }
         
         $id = $matches[0];
-        $maxLength = config('youtube-api.download.max_length');
+        $maxLength = config('youtube-api.download_max_length', 0);
         $exists = File::exists($this->getDownloadPath($id.".".$format));
 
         if($maxLength > 0 || $exists)
@@ -108,10 +104,6 @@ class ApiController extends Controller
 
     public function delete(Request $request, string $id)
     {
-        if(config('youtube-api') === null) {
-            return new JsonResponse(['error' => true, 'message' => 'Please publish the config file by running \'php artisan vendor:publish --tag=youtube-api-config.\''], 422);
-        }
-
         $removedFiles = [];
 
         foreach(self::POSSIBLE_FORMATS as $format) {
@@ -142,11 +134,7 @@ class ApiController extends Controller
             return new JsonResponse(['error' => true, 'message' => 'No google api specified'], 422);
         }
 
-        if(config('youtube-api') === null) {
-            return new JsonResponse(['error' => true, 'message' => 'Please publish the config file by running \'php artisan vendor:publish --tag=youtube-api-config.\''], 422);
-        }
-
-        $max_results = $request->get('max_results', config('youtube-api.search_max_results'));
+        $max_results = $request->get('max_results', config('youtube-api.search_max_results', 10));
 
         $gClient = new Google_Client();
         $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
