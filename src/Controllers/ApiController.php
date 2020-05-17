@@ -60,8 +60,11 @@ class ApiController extends Controller
                     'audio-format' => 'mp3',
                     'audio-quality' => 0,
                     'output' => '%(id)s.%(ext)s',
-                    //'ffmpeg-location' => '/usr/local/bin/ffmpeg'
                 );
+
+                if(config('youtube-api.ffmpeg_path', null) !== null) {
+                    $options['ffmpeg-location'] = config('youtube-api.ffmpeg_path');
+                }
             }
             else
             {

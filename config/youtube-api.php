@@ -34,5 +34,16 @@ return [
     |
     */
 
-    'search_max_results' => 10
+    'search_max_results' => 10,
+
+    /*
+    |--------------------------------------------------------------------------
+    | FFMPEG bin path
+    |--------------------------------------------------------------------------
+    |
+    | The location of the ffmpeg executable in case when manually build in stead of yum install or apt-get install
+    |
+    */
+
+    'ffmpeg_path' => '',
 ];
