@@ -82,6 +82,12 @@
                     </tbody>
                 </table>
                 <a target="_blank" class="btn btn-outline-primary" href="{{ session('converted')->file }}"><i class="fa fa-cloud-download" aria-hidden="true"></i> Listen/download</a>
+
+                <form action="{{ route('youtube-api.delete', ['id' => session('converted')->youtube_id]) }}" method="post">
+                    @method('DELETE')
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger"><i class="fa fa-trash" aria-hidden="true"></i> Remove file</button>
+                </form>
             </div>
         </div>
         @endif
