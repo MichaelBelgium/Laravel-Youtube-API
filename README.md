@@ -40,4 +40,8 @@ This package adds 3 api routes. The route prefix, `/ytconverter/` in this case, 
 * DELETE /ytconverter/{id}
 * GET /ytconverter/search/{q} 
 
-Check the wiki page of this repository for more information
+Check the wiki page of this repository for more information about the routes.
+
+## API Auth
+
+If needed, you can protect the API routes with the api:auth middleware by setting `enable_auth` to `true` in the configuration. A token is then required to make requests to the routes by passing it as bearer token or as query parameter `api_token`. See [Laravel 6.x docs](https://laravel.com/docs/6.x/api-authentication#passing-tokens-in-requests)

@@ -32,10 +32,16 @@ class YoutubeAPIServiceProvider extends ServiceProvider
     }
 
     private function loadRoutes() {
+        $apiMiddleware = ['api'];
+
+        if(config('youtube-api.enable_auth', false)) {
+            $apiMiddleware[] = 'auth:api';
+        }
+
         Route::group([
             'prefix' => 'api/' . config('youtube-api.route_prefix', 'ytconverter'),
             'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
-            'middleware' => 'api'
+            'middleware' => $apiMiddleware
         ], function() {
             $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
         });
