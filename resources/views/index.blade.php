@@ -33,6 +33,11 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                    @if (config('youtube-api.enable_auth', false))
+                        <div class="form-group">
+                            <input class="form-control" type="text" name="api_token" placeholder="API token" required>
+                        </div>
+                    @endif
                     <button type="submit" class="btn btn-outline-primary"><i class="fa fa-refresh" aria-hidden="true"></i> Convert</button>
                 </form>
             </div>

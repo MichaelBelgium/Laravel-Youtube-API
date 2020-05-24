@@ -6,7 +6,6 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class HomeController extends Controller
 {
@@ -20,6 +19,9 @@ class HomeController extends Controller
         $client = new Client();
         try {
             $response = $client->post(route('youtube-api.convert'), [
+                RequestOptions::HEADERS => [
+                    'Accept' => 'application/json'
+                ],
                 RequestOptions::FORM_PARAMS => $request->all()
             ]);
 
