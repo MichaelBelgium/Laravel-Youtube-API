@@ -45,7 +45,7 @@ return [
     |
     */
 
-    'ffmpeg_path' => '',
+    'ffmpeg_path' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -55,6 +55,6 @@ return [
     | If true, middleware 'auth:api' will be used for api routes
     |
     */
-    
+
     'enable_auth' => false,
 ];
