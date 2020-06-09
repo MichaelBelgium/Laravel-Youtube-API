@@ -57,4 +57,17 @@ return [
     */
 
     'enable_auth' => false,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enable throttle
+    |--------------------------------------------------------------------------
+    |
+    | If not null, sets the middleware 'throttle' on the api routes
+    | Example: '5,1' or 'rate_limit,1' (dynamic throttle)
+    |
+    */
+
+    'enable_throttle' => null,
 ];

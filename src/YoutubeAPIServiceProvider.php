@@ -38,6 +38,10 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             $apiMiddleware[] = 'auth:api';
         }
 
+        if(config('youtube-api.enable_throttle', null) !== null) {
+            $apiMiddleware[] = 'throttle:' . config('youtube-api.enable_throttle');
+        }
+
         Route::group([
             'prefix' => 'api/' . config('youtube-api.route_prefix', 'ytconverter'),
             'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
