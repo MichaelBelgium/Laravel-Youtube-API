@@ -15,6 +15,10 @@
                 <h5 class="card-title">Youtube converter</h5>
             </div>
             <div class="card-body">
+                @if (session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+                
                 <form action="{{ route('youtube-api.submit') }}" method="post" id="frm-convert">
                     @csrf
                     <div class="form-group">

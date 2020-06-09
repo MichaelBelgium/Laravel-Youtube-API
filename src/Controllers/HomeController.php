@@ -28,7 +28,10 @@ class HomeController extends Controller
             return redirect()->back()->with('converted', json_decode($response->getBody()->getContents()));
         } catch (ClientException $ex) {
             $obj = json_decode($ex->getResponse()->getBody());
-            return redirect()->back()->withErrors($obj->error_messages);
+            if(property_exists($obj, 'error_messages'))
+                return redirect()->back()->withErrors($obj->error_messages);
+            else
+                return redirect()->back()->with('error', $obj->message);
         }
     }
 }
