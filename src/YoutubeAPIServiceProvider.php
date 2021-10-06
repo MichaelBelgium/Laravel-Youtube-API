@@ -38,7 +38,7 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             $apiMiddleware[] = 'auth:api';
         }
 
-        if(config('youtube-api.enable_throttle', null) !== null) {
+        if(config('youtube-api.enable_throttle') !== null) {
             $apiMiddleware[] = 'throttle:' . config('youtube-api.enable_throttle');
         }
 

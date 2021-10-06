@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use MichaelBelgium\YoutubeAPI\Controllers\HomeController;
 
-Route::get('/', 'HomeController@index')->name('youtube-api.index');
-Route::post('/', 'HomeController@onPost')->name('youtube-api.submit');
+Route::get('/', [HomeController::class, 'index'])->name('youtube-api.index');
+Route::post('/', [HomeController::class, 'onPost'])->name('youtube-api.submit');

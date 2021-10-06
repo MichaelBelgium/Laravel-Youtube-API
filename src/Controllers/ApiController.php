@@ -24,7 +24,7 @@ class ApiController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'url' => ['required', 'string', 'url', 'regex:#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#'],
-            'format' => [Rule::in(ApiController::POSSIBLE_FORMATS)]
+            'format' => [Rule::in(self::POSSIBLE_FORMATS)]
         ]);
 
         if($validator->fails()) {
