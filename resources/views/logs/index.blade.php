@@ -26,6 +26,7 @@
                         <td>Title</td>
                         <td>Duration</td>
                         <td>Format</td>
+                        <td>Location</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,6 +37,19 @@
                             <td>{{ $log->title }}</td>
                             <td>{{ $log->duration }} seconds</td>
                             <td>{{ $log->format }}</td>
+                            <td>
+                                @php
+                                    $path = MichaelBelgium\YoutubeAPI\Controllers\ApiController::getDownloadPath($log->youtube_id.".".$log->format);
+                                @endphp
+                                @if (File::exists($path))
+                                    @php
+                                        $url = MichaelBelgium\YoutubeAPI\Controllers\ApiController::getDownloadUrl($log->youtube_id.".".$log->format);
+                                    @endphp
+                                    <a href="{{ $url }}" target="_blank">Converted file</a>
+                                @else
+                                    Removed
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

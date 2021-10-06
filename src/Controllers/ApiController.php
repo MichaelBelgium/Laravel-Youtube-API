@@ -39,12 +39,12 @@ class ApiController extends Controller
 
         $id = $queryvars['v'];
         $maxLength = config('youtube-api.download_max_length', 0);
-        $exists = File::exists($this->getDownloadPath($id.".".$format));
+        $exists = File::exists(self::getDownloadPath($id.".".$format));
 
         if($maxLength > 0 || $exists)
         {
             $dl = new YoutubeDl(['skip-download' => true]);
-            $dl->setDownloadPath($this->getDownloadPath());
+            $dl->setDownloadPath(self::getDownloadPath());
         
             try	{
                 $video = $dl->download($url);
@@ -83,17 +83,17 @@ class ApiController extends Controller
             }
 
             $dl = new YoutubeDl($options);
-            $dl->setDownloadPath($this->getDownloadPath());
+            $dl->setDownloadPath(self::getDownloadPath());
         }
 
         try
         {
             if($exists)
-                $file = $this->getDownloadUrl($id.".".$format);
+                $file = self::getDownloadUrl($id.".".$format);
             else
             {
                 $video = $dl->download($url);
-                $file = $this->getDownloadUrl($video->getFilename());
+                $file = self::getDownloadUrl($video->getFilename());
             }
 
             if(config('youtube-api.enable_logging', false) === true) 
@@ -128,7 +128,7 @@ class ApiController extends Controller
         $removedFiles = [];
 
         foreach(self::POSSIBLE_FORMATS as $format) {
-            $localFile = $this->getDownloadPath($id.'.'.$format);
+            $localFile = self::getDownloadPath($id.'.'.$format);
 
             if(File::exists($localFile)) {
                 File::delete($localFile);
@@ -197,12 +197,12 @@ class ApiController extends Controller
         }
     }
 
-    private function getDownloadPath(string $file = '')
+    public static function getDownloadPath(string $file = '')
     {
         return Storage::disk('public')->path($file);
     }
 
-    private function getDownloadUrl(string $file = '')
+    public static function getDownloadUrl(string $file = '')
     {
         return Storage::disk('public')->url($file);
     }
