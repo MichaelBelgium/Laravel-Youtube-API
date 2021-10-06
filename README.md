@@ -18,9 +18,14 @@ composer require michaelbelgium/laravel-youtube-api
 php artisan vendor:publish --tag=youtube-api-config
 ```
 
-* This package uses [the public disk](https://laravel.com/docs/7.x/filesystem#the-public-disk) of Laravel. Run this command to create a symbolic link to the public folder so that converted Youtube downloads are accessible:
+* This package uses [the public disk](https://laravel.com/docs/8.x/filesystem#the-public-disk) of Laravel. Run this command to create a symbolic link to the public folder so that converted Youtube downloads are accessible:
 ```bash
 php artisan storage:link
+```
+
+* Execute package migrations
+```
+php artisan migrate
 ```
 
 * Acquire a Google API key at the [Google Developer Console](https://console.developers.google.com) for the API "Youtube Data API v3". Use this key in the environment variable `GOOGLE_API_KEY` - that this packages uses
@@ -44,4 +49,22 @@ Check the wiki page of this repository for more information about the routes.
 
 ## API Auth
 
-If needed, you can protect the API routes with the api:auth middleware by setting `enable_auth` to `true` in the configuration. A token is then required to make requests to the routes by passing it as bearer token or as query parameter `api_token`. See [Laravel 6.x docs](https://laravel.com/docs/6.x/api-authentication#passing-tokens-in-requests)
+If needed, you can protect the API routes with an authentication guard by setting `auth` in the configuration.
+
+Example:
+```PHP
+'auth' => 'sanctum',
+
+```
+
+## API rate limiting
+
+If needed, you can limit API calls by editing the config setting `ratelimiter`. See [Laravel docs](https://laravel.com/docs/8.x/routing#rate-limiting) for more information or examples.
+
+Example:
+
+```PHP
+'ratelimiter' => function (Request $request) {
+    return Limit::perMinute(5);
+},
+```
