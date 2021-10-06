@@ -43,20 +43,16 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             $apiMiddleware[] = 'throttle:' . config('youtube-api.enable_throttle');
         }
 
-        Route::group([
-            'prefix' => 'api/' . config('youtube-api.route_prefix', 'ytconverter'),
-            'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
-            'middleware' => $apiMiddleware
-        ], function() {
-            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
-        });
+        Route::prefix('api/' . config('youtube-api.route_prefix', 'ytconverter'))
+            ->middleware($apiMiddleware)
+            ->namespace( 'MichaelBelgium\YoutubeAPI\Controllers')
+            ->group(__DIR__.'/../routes/api.php');
 
-        Route::group([
-            'prefix' => config('youtube-api.route_prefix', 'ytconverter'),
-            'namespace' => 'MichaelBelgium\YoutubeAPI\Controllers',
-            'middleware' => 'web'
-        ], function() {
-            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
-        });
+        Route::prefix(config('youtube-api.route_prefix', 'ytconverter'))
+            ->middleware('web')
+            ->namespace('MichaelBelgium\YoutubeAPI\Controllers')
+            ->group(__DIR__.'/../routes/web.php');
+        
+        
     }
 }
