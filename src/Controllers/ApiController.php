@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use MichaelBelgium\YoutubeAPI\Models\Log;
 use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
@@ -93,6 +94,17 @@ class ApiController extends Controller
             {
                 $video = $dl->download($url);
                 $file = $this->getDownloadUrl($video->getFilename());
+            }
+
+            if(config('youtube-api.enable_logging', false) === true) 
+            {
+                $log = new Log();
+                $log->youtube_id = $video->getId();
+                $log->title = $video->getTitle();
+                $log->duration = $video->getDuration();
+                $log->format = $format;
+
+                $log->save();
             }
 
             return new JsonResponse([

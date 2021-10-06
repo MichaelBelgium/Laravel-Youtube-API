@@ -70,4 +70,16 @@ return [
     */
 
     'enable_throttle' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enable logging
+    |--------------------------------------------------------------------------
+    |
+    | Save an entry every time a video gets converted into logs table.
+    |
+    | Note: this also enables the page /logs with an overview of all songs that have been converted
+    |
+    */
+    'enable_logging' => false,
 ];
