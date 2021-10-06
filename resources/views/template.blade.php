@@ -10,8 +10,8 @@
     @yield('styles')
 </head>
 <body>
-    <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('youtube-api.index') }}">Youtube converter</a>
         
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavDropdown"
@@ -25,8 +25,8 @@
                     </li>
                 </ul>
             </div>
-        </nav>
-    </div>
+        </div>
+    </nav>
 
     @yield('content')
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
