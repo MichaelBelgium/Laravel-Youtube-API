@@ -11,7 +11,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        return view('youtube-api-views::index');
+        return view('youtube-api-views::home.index');
     }
 
     public function onPost(Request $request)
