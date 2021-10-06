@@ -3,7 +3,10 @@
     "description": "Add a youtube api to your Laravel instance",
     "keywords": [
         "michaelbelgium",
-        "laravel-youtube-api"
+        "laravel-youtube-api",
+        "youtube-api",
+        "laravel",
+        "youtube"
     ],
     "homepage": "https://github.com/michaelbelgium/laravel-youtube-api",
     "license": "MIT",
@@ -16,14 +19,13 @@
         }
     ],
     "require": {
-        "php": "^7.1",
         "google/apiclient": "^2.4",
-        "illuminate/support": "^7.0",
+        "illuminate/support": "^8.0",
         "norkunas/youtube-dl-php": "^1.6"
     },
     "require-dev": {
         "orchestra/testbench": "^5.2",
-        "phpunit/phpunit": "^8.5"
+        "phpunit/phpunit": "^9.0"
     },
     "autoload": {
         "psr-4": {
