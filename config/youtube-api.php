@@ -49,14 +49,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Enable authentication
+    | Set authentication
     |--------------------------------------------------------------------------
     |
-    | If true, middleware 'auth:api' will be used for api routes
+    | If not null, it'll attempt to use the defined authentication guard for api routes
     |
     */
 
-    'enable_auth' => false,
+    'auth' => null,
 
     /*
     |--------------------------------------------------------------------------

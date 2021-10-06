@@ -36,8 +36,8 @@ class YoutubeAPIServiceProvider extends ServiceProvider
     private function loadRoutes() {
         $apiMiddleware = ['api'];
 
-        if(config('youtube-api.enable_auth', false)) {
-            $apiMiddleware[] = 'auth:api';
+        if(config('youtube-api.auth') !== null) {
+            $apiMiddleware[] = 'auth:' . config('youtube-api.auth');
         }
 
         if(config('youtube-api.ratelimiter') !== null) {
