@@ -16,7 +16,10 @@ class HomeController extends Controller
 
     public function onPost(Request $request)
     {
-        $response = Http::post(route('youtube-api.convert'), $request->all())->object();
+        if($request->has('q'))
+            $response = Http::get(route('youtube-api.search', $request->all()))->object();
+        else
+            $response = Http::post(route('youtube-api.convert'), $request->all())->object();
 
         if($response->error) {
             if(property_exists($response, 'error_messages'))
@@ -25,7 +28,7 @@ class HomeController extends Controller
                 return redirect()->back()->with('error', $response->message);
         }
         
-        return redirect()->back()->with('converted', $response);
+        return redirect()->back()->with($request->has('q') ? 'searched' : 'converted', $response);
     }
 
     public function logs(Request $request)
