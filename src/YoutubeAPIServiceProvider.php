@@ -21,6 +21,7 @@ class YoutubeAPIServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'youtube-api-views');
         $this->loadRoutes();
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 
     /**
