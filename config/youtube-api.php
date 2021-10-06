@@ -58,18 +58,20 @@ return [
 
     'enable_auth' => false,
 
-
     /*
     |--------------------------------------------------------------------------
-    | Enable throttle
+    | Set ratelimiter
     |--------------------------------------------------------------------------
     |
-    | If not null, sets the middleware 'throttle' on the api routes
-    | Example: '5,1' or 'rate_limit,1' (dynamic throttle)
+    | If not null, sets a ratelimiter on the api group routes
+    | Accepts:
+    |       - null
+    |       - an anonymous function with Illuminate\Http\Request parameter and returning an instance of Illuminate\Cache\RateLimiting\Limit
+    |
+    | More info: https://laravel.com/docs/8.x/routing#rate-limiting
     |
     */
-
-    'enable_throttle' => null,
+    'ratelimiter' => null,
 
     /*
     |--------------------------------------------------------------------------

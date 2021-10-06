@@ -4,6 +4,7 @@ namespace MichaelBelgium\YoutubeAPI;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\RateLimiter;
 
 class YoutubeAPIServiceProvider extends ServiceProvider
 {
@@ -39,8 +40,10 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             $apiMiddleware[] = 'auth:api';
         }
 
-        if(config('youtube-api.enable_throttle') !== null) {
-            $apiMiddleware[] = 'throttle:' . config('youtube-api.enable_throttle');
+        if(config('youtube-api.ratelimiter') !== null) {
+            RateLimiter::for('yt-api', config('youtube-api.ratelimiter'));
+
+            $apiMiddleware[] = 'throttle:yt-api';
         }
 
         Route::prefix('api/' . config('youtube-api.route_prefix', 'ytconverter'))
@@ -52,7 +55,5 @@ class YoutubeAPIServiceProvider extends ServiceProvider
             ->middleware('web')
             ->namespace('MichaelBelgium\YoutubeAPI\Controllers')
             ->group(__DIR__.'/../routes/web.php');
-        
-        
     }
 }
