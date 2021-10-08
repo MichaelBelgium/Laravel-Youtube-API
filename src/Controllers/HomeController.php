@@ -22,7 +22,7 @@ class HomeController extends Controller
         else
             $response = Http::post(route('youtube-api.convert'), $request->all());
 
-        if($response->status() == Response::HTTP_UNAUTHORIZED)
+        if($response->status() == Response::HTTP_UNAUTHORIZED || $response->status() == Response::HTTP_TOO_MANY_REQUESTS)
             return back()->with('error', $response->object()->message);
         else if($response->status() == Response::HTTP_BAD_REQUEST)
             return redirect()->back()->withErrors($response->object()->error_messages);
