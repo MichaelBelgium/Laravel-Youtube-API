@@ -189,7 +189,7 @@ class ApiController extends Controller
                 );
             }
 
-            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results], 422);
+            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results]);
             
         } catch (Exception $ex) {
             $errorObj = json_decode($ex->getMessage());
