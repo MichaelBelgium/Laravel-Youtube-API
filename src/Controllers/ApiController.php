@@ -103,6 +103,7 @@ class ApiController extends Controller
                 $log->title = $video->getTitle();
                 $log->duration = $video->getDuration();
                 $log->format = $format;
+                //$log->user()->associate(Auth::user()) todo ?
 
                 $log->save();
             }
@@ -149,13 +150,26 @@ class ApiController extends Controller
         return new JsonResponse(['error' => false, 'message' => $message]);
     }
 
-    public function search(Request $request, string $q)
+    public function search(Request $request)
     {
         if(empty(env('GOOGLE_API_KEY'))) {
             return new JsonResponse(['error' => true, 'message' => 'No google api specified'], 422);
         }
 
-        $max_results = $request->get('max_results', config('youtube-api.search_max_results', 10));
+        $validator = Validator::make($request->all(), [
+            'q' => ['required', 'string'],
+            'max_results' => ['numeric']
+        ]);
+
+
+        if($validator->fails()) {
+            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], 422);
+        }
+
+        $data = $validator->validated();
+        
+        $q = $data['q'];
+        $max_results = $data['max_results'] ?? config('youtube-api.search_max_results', 10);
 
         $gClient = new Google_Client();
         $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
