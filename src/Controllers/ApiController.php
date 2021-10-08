@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use MichaelBelgium\YoutubeAPI\Models\Log;
+use Symfony\Component\HttpFoundation\Response;
 use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
@@ -29,7 +30,7 @@ class ApiController extends Controller
         ]);
 
         if($validator->fails()) {
-            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], 422);
+            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
         }
 
         $url = Arr::get($validator->validated(), 'url');
@@ -50,11 +51,11 @@ class ApiController extends Controller
                 $video = $dl->download($url);
         
                 if($video->getDuration() > $maxLength && $maxLength > 0)
-                    return new JsonResponse(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], 422);
+                    return new JsonResponse(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
             }
             catch (Exception $ex)
             {
-                return new JsonResponse(['error' => true, 'message' => $ex->getMessage()], 422);
+                return new JsonResponse(['error' => true, 'message' => $ex->getMessage()], Response::HTTP_BAD_REQUEST);
             }
         }
 
@@ -153,7 +154,7 @@ class ApiController extends Controller
     public function search(Request $request)
     {
         if(empty(env('GOOGLE_API_KEY'))) {
-            return new JsonResponse(['error' => true, 'message' => 'No google api specified'], 422);
+            return new JsonResponse(['error' => true, 'message' => 'No google api specified'], Response::HTTP_BAD_REQUEST);
         }
 
         $validator = Validator::make($request->all(), [
@@ -163,7 +164,7 @@ class ApiController extends Controller
 
 
         if($validator->fails()) {
-            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], 422);
+            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
         }
 
         $data = $validator->validated();
@@ -207,7 +208,7 @@ class ApiController extends Controller
             
         } catch (Exception $ex) {
             $errorObj = json_decode($ex->getMessage());
-            return new JsonResponse(['error' => true, 'message' => $errorObj->error->message], 422);
+            return new JsonResponse(['error' => true, 'message' => $errorObj->error->message], Response::HTTP_BAD_REQUEST);
         }
     }
 

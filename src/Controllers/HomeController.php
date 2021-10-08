@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use MichaelBelgium\YoutubeAPI\Models\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class HomeController extends Controller
 {
@@ -17,18 +18,16 @@ class HomeController extends Controller
     public function onPost(Request $request)
     {
         if($request->has('q'))
-            $response = Http::get(route('youtube-api.search', $request->all()))->object();
+            $response = Http::get(route('youtube-api.search', $request->all()));
         else
-            $response = Http::post(route('youtube-api.convert'), $request->all())->object();
+            $response = Http::post(route('youtube-api.convert'), $request->all());
 
-        if($response->error) {
-            if(property_exists($response, 'error_messages'))
-                return redirect()->back()->withErrors($response->error_messages);
-            else
-                return redirect()->back()->with('error', $response->message);
-        }
+        if($response->status() == Response::HTTP_UNAUTHORIZED)
+            return back()->with('error', $response->object()->message);
+        else if($response->status() == Response::HTTP_BAD_REQUEST)
+            return redirect()->back()->withErrors($response->object()->error_messages);
         
-        return redirect()->back()->with($request->has('q') ? 'searched' : 'converted', $response);
+        return redirect()->back()->with($request->has('q') ? 'searched' : 'converted', $response->object());
     }
 
     public function logs(Request $request)
