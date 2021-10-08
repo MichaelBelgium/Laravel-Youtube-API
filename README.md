@@ -43,7 +43,7 @@ This package adds 3 api routes. The route prefix, `/ytconverter/` in this case, 
 
 * POST /ytconverter/convert
 * DELETE /ytconverter/{id}
-* GET /ytconverter/search/{q} 
+* GET /ytconverter/search
 
 Check the wiki page of this repository for more information about the routes.
 

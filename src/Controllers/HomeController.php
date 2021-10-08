@@ -32,7 +32,7 @@ class HomeController extends Controller
 
     public function logs(Request $request)
     {
-        abort_if(config('youtube-api.enable_logging', false) === false, 404);
+        abort_if(config('youtube-api.enable_logging', false) === false, Response::HTTP_NOT_FOUND);
 
         $dates = Log::select(DB::raw('DATE(created_at) date'))->groupBy(DB::raw('DATE(created_at)'))->get();
         $logs = [];
