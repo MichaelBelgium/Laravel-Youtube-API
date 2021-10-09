@@ -18,9 +18,9 @@ class HomeController extends Controller
     public function onPost(Request $request)
     {
         if($request->has('q'))
-            $response = Http::get(route('youtube-api.search', $request->all()));
+            $response = Http::withToken($request->token)->get(route('youtube-api.search', $request->all()));
         else
-            $response = Http::post(route('youtube-api.convert'), $request->all());
+            $response = Http::withToken($request->token)->post(route('youtube-api.convert'), $request->all());
 
         if($response->status() == Response::HTTP_UNAUTHORIZED || $response->status() == Response::HTTP_TOO_MANY_REQUESTS)
             return back()->with('error', $response->object()->message);

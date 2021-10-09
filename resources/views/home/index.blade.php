@@ -33,9 +33,10 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        @if (config('youtube-api.enable_auth', false))
-                            <div class="form-group">
-                                <input class="form-control" type="text" name="api_token" placeholder="API token" required value="{{ request()->token }}">
+                        @if (config('youtube-api.auth') !== null)
+                            <div class="form-floating mb-3">
+                                <input class="form-control" type="text" name="token" placeholder="API token">
+                                <label for="token">API token</label>
                             </div>
                         @endif
                         <button type="submit" class="btn btn-outline-primary"><i class="fas fa-sync-alt"></i> Convert</button>
@@ -120,6 +121,13 @@
                             <input type="number" name="max_results" id="max_results" class="form-control" value="10" placeholder="number">
                             <label for="max_results">Maximum results</label>
                         </div>
+                        
+                        @if (config('youtube-api.auth') !== null)
+                            <div class="form-floating mb-3">
+                                <input class="form-control" type="text" name="token" placeholder="API token">
+                                <label for="token">API token</label>
+                            </div>
+                        @endif
                         
                         <button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Search</button>
                     </form>
