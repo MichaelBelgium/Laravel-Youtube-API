@@ -33,8 +33,10 @@ class ApiController extends Controller
             return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
         }
 
-        $url = Arr::get($validator->validated(), 'url');
-        $format = Arr::get($validator->validated(), 'format', 'mp3');
+        $validated = $validator->validated();
+
+        $url = Arr::get($validated, 'url');
+        $format = Arr::get($validated, 'format', 'mp3');
 
         parse_str(parse_url($url, PHP_URL_QUERY), $queryvars);
 
@@ -70,7 +72,7 @@ class ApiController extends Controller
                     'output' => '%(id)s.%(ext)s',
                 );
 
-                if(config('youtube-api.ffmpeg_path', null) !== null) {
+                if(config('youtube-api.ffmpeg_path') !== null) {
                     $options['ffmpeg-location'] = config('youtube-api.ffmpeg_path');
                 }
             }
