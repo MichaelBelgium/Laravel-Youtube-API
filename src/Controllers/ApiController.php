@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -106,7 +107,9 @@ class ApiController extends Controller
                 $log->title = $video->getTitle();
                 $log->duration = $video->getDuration();
                 $log->format = $format;
-                //$log->user()->associate(Auth::user()) todo ?
+                
+                if(config('youtube-api.auth') !== null)
+                    $log->user()->associate(Auth::user());
 
                 $log->save();
             }
