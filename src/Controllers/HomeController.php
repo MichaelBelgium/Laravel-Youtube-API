@@ -24,8 +24,14 @@ class HomeController extends Controller
 
         if($response->status() == Response::HTTP_UNAUTHORIZED || $response->status() == Response::HTTP_TOO_MANY_REQUESTS)
             return back()->with('error', $response->object()->message);
-        else if($response->status() == Response::HTTP_BAD_REQUEST)
-            return redirect()->back()->withErrors($response->object()->error_messages);
+        else if($response->status() == Response::HTTP_BAD_REQUEST) {
+            $errObj = $response->object();
+
+            if(property_exists($errObj, 'error_messages'))
+                return redirect()->back()->withErrors($errObj->error_messages);
+            
+            return back()->with('error', $errObj->message);
+        }
         
         return redirect()->back()->with($request->has('q') ? 'searched' : 'converted', $response->object());
     }
