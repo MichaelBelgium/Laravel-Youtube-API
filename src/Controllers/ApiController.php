@@ -6,7 +6,6 @@ use Google_Client;
 use Google_Service_YouTube;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
@@ -31,7 +30,7 @@ class ApiController extends Controller
         ]);
 
         if($validator->fails()) {
-            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
+            return response()->json(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
         }
 
         $validated = $validator->validated();
@@ -54,11 +53,11 @@ class ApiController extends Controller
                 $video = $dl->download($url);
         
                 if($video->getDuration() > $maxLength && $maxLength > 0)
-                    return new JsonResponse(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
+                    return response()->json(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
             }
             catch (Exception $ex)
             {
-                return new JsonResponse(['error' => true, 'message' => $ex->getMessage()], Response::HTTP_BAD_REQUEST);
+                return response()->json(['error' => true, 'message' => $ex->getMessage()], Response::HTTP_BAD_REQUEST);
             }
         }
 
@@ -114,7 +113,7 @@ class ApiController extends Controller
                 $log->save();
             }
 
-            return new JsonResponse([
+            return response()->json([
                 'error' => false,
                 'youtube_id' => $video->getId(),
                 'title' => $video->getTitle(),
@@ -126,7 +125,7 @@ class ApiController extends Controller
         }
         catch (Exception $e)
         {
-            return new JsonResponse(['error' => true, 'message' => $e->getMessage()]);
+            return response()->json(['error' => true, 'message' => $e->getMessage()]);
         }
     }
 
@@ -153,13 +152,13 @@ class ApiController extends Controller
         if(!empty($resultNotRemoved))
             $message .= ' Not removed: ' . implode(', ', $resultNotRemoved);
 
-        return new JsonResponse(['error' => false, 'message' => $message]);
+        return response()->json(['error' => false, 'message' => $message]);
     }
 
     public function search(Request $request)
     {
         if(empty(env('GOOGLE_API_KEY'))) {
-            return new JsonResponse(['error' => true, 'message' => 'No google api specified'], Response::HTTP_BAD_REQUEST);
+            return response()->json(['error' => true, 'message' => 'No google api specified'], Response::HTTP_BAD_REQUEST);
         }
 
         $validator = Validator::make($request->all(), [
@@ -169,7 +168,7 @@ class ApiController extends Controller
 
 
         if($validator->fails()) {
-            return new JsonResponse(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
+            return response()->json(['error' => true, 'error_messages' => $validator->errors()], Response::HTTP_BAD_REQUEST);
         }
 
         $data = $validator->validated();
@@ -209,11 +208,11 @@ class ApiController extends Controller
                 );
             }
 
-            return new JsonResponse(['error' => false, 'message' => '', 'results' => $results]);
+            return response()->json(['error' => false, 'message' => '', 'results' => $results]);
             
         } catch (Exception $ex) {
             $errorObj = json_decode($ex->getMessage());
-            return new JsonResponse(['error' => true, 'message' => $errorObj->error->message], Response::HTTP_BAD_REQUEST);
+            return response()->json(['error' => true, 'message' => $errorObj->error->message], Response::HTTP_BAD_REQUEST);
         }
     }
 
