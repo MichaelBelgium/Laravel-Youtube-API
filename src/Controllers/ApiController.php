@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use MichaelBelgium\YoutubeAPI\Models\Log;
 use Symfony\Component\HttpFoundation\Response;
+use YoutubeDl\Options;
 use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
@@ -46,11 +47,15 @@ class ApiController extends Controller
 
         if($maxLength > 0 || $exists)
         {
-            $dl = new YoutubeDl(['skip-download' => true]);
-            $dl->setDownloadPath(self::getDownloadPath());
-        
             try	{
-                $video = $dl->download($url);
+                $dl = new YoutubeDl();
+
+                $video = $dl->download(
+                    Options::create()
+                        ->skipDownload(true)
+                        ->downloadPath(self::getDownloadPath())
+                        ->url($url)
+                )->getVideos()[0];
         
                 if($video->getDuration() > $maxLength && $maxLength > 0)
                     return response()->json(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
@@ -61,41 +66,36 @@ class ApiController extends Controller
             }
         }
 
-        if(!$exists)
-        {
-            if($format == 'mp3')
-            {
-                $options = array(
-                    'extract-audio' => true,
-                    'audio-format' => 'mp3',
-                    'audio-quality' => 0,
-                    'output' => '%(id)s.%(ext)s',
-                );
-
-                if(config('youtube-api.ffmpeg_path') !== null) {
-                    $options['ffmpeg-location'] = config('youtube-api.ffmpeg_path');
-                }
-            }
-            else
-            {
-                $options = array(
-                    'continue' => true,
-                    'format' => 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                    'output' => '%(id)s.%(ext)s'
-                );
-            }
-
-            $dl = new YoutubeDl($options);
-            $dl->setDownloadPath(self::getDownloadPath());
-        }
-
         try
         {
             if($exists)
                 $file = self::getDownloadUrl($id.".".$format);
             else
             {
-                $video = $dl->download($url);
+                $options = Options::create()
+                    ->downloadPath(self::getDownloadPath())
+                    ->output('%(id)s.%(ext)s')
+                    ->url($url);
+    
+                if($format == 'mp3')
+                {
+                    $options->extractAudio(true)
+                        ->audioFormat('mp3')
+                        ->audioQuality('0');
+                    
+                    if(config('youtube-api.ffmpeg_path') !== null) {
+                        $options->ffmpegLocation(config('youtube-api.ffmpeg_path'));
+                    }
+                }
+                else
+                {
+                    $options->continue(true)
+                        ->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
+                }
+                
+                $dl = new YoutubeDl();
+                $video = $dl->download($options)->getVideos()[0];
+
                 $file = self::getDownloadUrl($video->getFilename());
             }
 

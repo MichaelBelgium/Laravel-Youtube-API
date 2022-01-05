@@ -21,7 +21,7 @@
     "require": {
         "google/apiclient": "^2.4",
         "illuminate/support": "^8.0",
-        "norkunas/youtube-dl-php": "^1.6"
+        "norkunas/youtube-dl-php": "^2.0"
     },
     "require-dev": {
         "orchestra/testbench": "^6.0",
