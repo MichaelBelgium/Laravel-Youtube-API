@@ -106,6 +106,9 @@ class ApiController extends Controller
 
                 $video = $dl->download($options)->getVideos()[0];
 
+                if($video->getError() !== null)
+                    throw new Exception($video->getError());
+
                 $file = self::getDownloadUrl($video->getFilename());
             }
 
