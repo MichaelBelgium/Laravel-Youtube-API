@@ -106,7 +106,7 @@ class ApiController extends Controller
                 if($video->getError() !== null)
                     throw new Exception($video->getError());
 
-                $file = self::getDownloadUrl($video->getFilename());
+                $file = self::getDownloadUrl(File::basename($video->getFilename()));
             }
 
             if(config('youtube-api.enable_logging', false) === true) 
