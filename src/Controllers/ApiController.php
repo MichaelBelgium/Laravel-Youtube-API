@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use MichaelBelgium\YoutubeAPI\Models\Log;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\ExecutableFinder;
 use YoutubeDl\Options;
 use YoutubeDl\YoutubeDl;
 
@@ -44,11 +45,16 @@ class ApiController extends Controller
         $id = $queryvars['v'];
         $maxLength = config('youtube-api.download_max_length', 0);
         $exists = File::exists(self::getDownloadPath($id.".".$format));
+        //use yt-dlp if it's installed on the system, faster downloads and lot more improvements than youtube-dl
+        $ytdlp = (new ExecutableFinder())->find('yt-dlp');
 
         if($maxLength > 0 || $exists)
         {
             try	{
                 $dl = new YoutubeDl();
+
+                if($ytdlp !== null)
+                    $dl->setBinPath($ytdlp);
 
                 $video = $dl->download(
                     Options::create()
@@ -94,6 +100,10 @@ class ApiController extends Controller
                 }
                 
                 $dl = new YoutubeDl();
+
+                if($ytdlp !== null)
+                    $dl->setBinPath($ytdlp);
+
                 $video = $dl->download($options)->getVideos()[0];
 
                 $file = self::getDownloadUrl($video->getFilename());
