@@ -85,7 +85,7 @@ class ApiController extends Controller
     
                 if($format == 'mp3')
                 {
-                    $options->extractAudio(true)
+                    $options = $options->extractAudio(true)
                         ->audioFormat('mp3')
                         ->audioQuality('0');
                     
@@ -94,10 +94,7 @@ class ApiController extends Controller
                     }
                 }
                 else
-                {
-                    $options->continue(true)
-                        ->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
-                }
+                    $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
                 
                 $dl = new YoutubeDl();
 
