@@ -90,7 +90,7 @@ class ApiController extends Controller
                         ->audioQuality('0');
                     
                     if(config('youtube-api.ffmpeg_path') !== null) {
-                        $options->ffmpegLocation(config('youtube-api.ffmpeg_path'));
+                        $options = $options->ffmpegLocation(config('youtube-api.ffmpeg_path'));
                     }
                 }
                 else
@@ -135,7 +135,7 @@ class ApiController extends Controller
         }
         catch (Exception $e)
         {
-            return response()->json(['error' => true, 'message' => $e->getMessage()]);
+            return response()->json(['error' => true, 'message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
