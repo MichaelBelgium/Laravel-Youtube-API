@@ -58,6 +58,7 @@ class ApiController extends Controller
 
                 $video = $dl->download(
                     Options::create()
+                        ->noPlaylist()
                         ->skipDownload(true)
                         ->downloadPath(self::getDownloadPath())
                         ->url($url)
@@ -79,6 +80,7 @@ class ApiController extends Controller
             else
             {
                 $options = Options::create()
+                    ->noPlaylist()
                     ->downloadPath(self::getDownloadPath())
                     ->output('%(id)s.%(ext)s')
                     ->url($url);
