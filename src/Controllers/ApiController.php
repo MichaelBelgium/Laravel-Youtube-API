@@ -26,8 +26,10 @@ class ApiController extends Controller
 
     public function convert(Request $request)
     {
+        $ytRegex = '#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#';
+
         $validator = Validator::make($request->all(), [
-            'url' => ['required', 'string', 'url', 'regex:#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#'],
+            'url' => ['required', 'string', 'url', 'regex:' . $ytRegex],
             'format' => [Rule::in(self::POSSIBLE_FORMATS)]
         ]);
 
@@ -39,10 +41,9 @@ class ApiController extends Controller
 
         $url = Arr::get($validated, 'url');
         $format = Arr::get($validated, 'format', 'mp3');
+        preg_match($ytRegex, $url, $matches);
 
-        parse_str(parse_url($url, PHP_URL_QUERY), $queryvars);
-
-        $id = $queryvars['v'];
+        $id = $matches[0];
         $maxLength = config('youtube-api.download_max_length', 0);
         $exists = File::exists(self::getDownloadPath($id.".".$format));
         //use yt-dlp if it's installed on the system, faster downloads and lot more improvements than youtube-dl
