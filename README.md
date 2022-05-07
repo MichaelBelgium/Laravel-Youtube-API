@@ -41,13 +41,13 @@ On the server where your laravel app is located, you'll need to install some pac
 
 This package adds 3 api routes. The route prefix, `/ytconverter/` in this case, is configurable.
 
-* POST /ytconverter/convert
+* POST|GET /ytconverter/convert
 * DELETE /ytconverter/{id}
 * GET /ytconverter/search
 
 Check the wiki page of this repository for more information about the routes.
 
-## API Auth
+## API authorization
 
 If needed, you can protect the API routes with an authentication guard by setting `auth` in the configuration.
 
