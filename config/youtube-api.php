@@ -16,14 +16,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Maximum download length
+    | Set download length limit
     |--------------------------------------------------------------------------
     |
-    | Specify in seconds what the maximum duration length can be for converting. Set to 0 to disable
+    | If not null, sets a limit on the video length that users can convert
+    |   Accepts:
+    |       - null
+    |       - an anonymous function with Illuminate\Http\Request parameter and returning an integer, the max video length in seconds
     |
+    |   Examples:
+    |       function (Illuminate\Http\Request $request) 
+    |       {
+    |           $plan = $request->user()->getCurrentPlan();
+    |
+    |            return $plan->download_limit;
+    |       }
+    |
+    |       function (Illuminate\Http\Request $request) 
+    |       {
+    |           return 300;
+    |       }
     */
 
-    'download_max_length' => 0,
+    'videolength_limiter' => null,
 
     /*
     |--------------------------------------------------------------------------

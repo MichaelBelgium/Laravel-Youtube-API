@@ -44,12 +44,12 @@ class ApiController extends Controller
         preg_match($ytRegex, $url, $matches);
 
         $id = $matches[0];
-        $maxLength = config('youtube-api.download_max_length', 0);
+        $lengthLimiter = config('youtube-api.videolength_limiter');
         $exists = File::exists(self::getDownloadPath($id.".".$format));
         //use yt-dlp if it's installed on the system, faster downloads and lot more improvements than youtube-dl
         $ytdlp = (new ExecutableFinder())->find('yt-dlp');
 
-        if($maxLength > 0 || $exists)
+        if($lengthLimiter !== null || $exists)
         {
             try	{
                 $dl = new YoutubeDl();
@@ -64,6 +64,8 @@ class ApiController extends Controller
                         ->downloadPath(self::getDownloadPath())
                         ->url($url)
                 )->getVideos()[0];
+
+                $maxLength = $lengthLimiter($request);
         
                 if($video->getDuration() > $maxLength && $maxLength > 0)
                     return response()->json(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
