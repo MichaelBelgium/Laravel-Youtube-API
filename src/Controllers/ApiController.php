@@ -65,10 +65,13 @@ class ApiController extends Controller
                         ->url($url)
                 )->getVideos()[0];
 
-                $maxLength = $lengthLimiter($request);
-        
-                if($video->getDuration() > $maxLength && $maxLength > 0)
-                    return response()->json(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
+                if (is_callable($lengthLimiter))
+                {
+                    $maxLength = $lengthLimiter($request);
+
+                    if($video->getDuration() > $maxLength && $maxLength > 0)
+                        return response()->json(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
+                }
             }
             catch (Exception $ex)
             {
