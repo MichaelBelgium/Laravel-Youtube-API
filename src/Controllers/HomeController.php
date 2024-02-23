@@ -3,6 +3,7 @@ namespace MichaelBelgium\YoutubeAPI\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use MichaelBelgium\YoutubeAPI\Models\Log;
@@ -40,18 +41,25 @@ class HomeController extends Controller
     {
         abort_if(config('youtube-api.enable_logging', false) === false, Response::HTTP_NOT_FOUND);
 
-        $dates = Log::select(DB::raw('DATE(created_at) date'))->groupBy(DB::raw('DATE(created_at)'))->get();
-        $logs = [];
+        $selectedDate = $request->get('date');
 
-        foreach ($dates as $date) {
-            $logs[$date->date] = Log::where(DB::raw('DATE(created_at)'), $date->date)->get();
-        }
+        /** @var Collection $dates */
+        $dates = Log::select(DB::raw('DATE(created_at) date'))
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy(DB::raw('DATE(created_at)'), 'DESC')
+            ->get();
 
-        $keys = array_keys($logs);
+        $dates = $dates->map(fn($date) => $date->date);
+
+        $logs = Log::where(DB::raw('DATE(created_at)'), $request->get('date', $dates->first()))
+            ->orderBy('created_at', 'DESC')
+            ->simplePaginate(25)
+            ->withQueryString();
 
         return view('youtube-api-views::logs.index', [
+            'dates' => $dates,
             'logs' => $logs,
-            'firstDate' => reset($keys)
+            'selectedDate' => $selectedDate,
         ]);
     }
 }
