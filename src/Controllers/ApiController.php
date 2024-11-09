@@ -103,6 +103,9 @@ class ApiController extends Controller
                 }
                 else
                     $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
+
+                if (config('youtube-api.proxy') !== null)
+                    $options = $options->proxy(config('youtube-api.proxy'));
                 
                 $dl = new YoutubeDl();
 

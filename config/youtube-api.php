@@ -99,4 +99,17 @@ return [
     |
     */
     'enable_logging' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Proxy Configuration
+    |--------------------------------------------------------------------------
+    |
+    | If not null, sets a proxy for yt-dlp or youtube-dl.
+    | Accepts:
+    |       - null
+    |       - a string representing the proxy URL
+    |
+    */
+    'proxy' => null,
 ];
