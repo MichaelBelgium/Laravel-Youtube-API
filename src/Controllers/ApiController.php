@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use MichaelBelgium\YoutubeAPI\Models\Log;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Process\ExecutableFinder;
 use YoutubeDl\Options;
 use YoutubeDl\YoutubeDl;
 
@@ -46,16 +45,11 @@ class ApiController extends Controller
         $id = $matches[0];
         $lengthLimiter = config('youtube-api.videolength_limiter');
         $exists = File::exists(self::getDownloadPath($id.".".$format));
-        //use yt-dlp if it's installed on the system, faster downloads and lot more improvements than youtube-dl
-        $ytdlp = (new ExecutableFinder())->find('yt-dlp');
 
         if($lengthLimiter !== null || $exists)
         {
             try	{
                 $dl = new YoutubeDl();
-
-                if($ytdlp !== null)
-                    $dl->setBinPath($ytdlp);
 
                 $video = $dl->download(
                     Options::create()
@@ -89,6 +83,7 @@ class ApiController extends Controller
                     ->noPlaylist()
                     ->downloadPath(self::getDownloadPath())
                     ->output('%(id)s.%(ext)s')
+                    ->proxy(config('youtube-api.proxy'))
                     ->url($url);
     
                 if($format == 'mp3')
@@ -103,14 +98,8 @@ class ApiController extends Controller
                 }
                 else
                     $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
-
-                if (config('youtube-api.proxy') !== null)
-                    $options = $options->proxy(config('youtube-api.proxy'));
                 
                 $dl = new YoutubeDl();
-
-                if($ytdlp !== null)
-                    $dl->setBinPath($ytdlp);
 
                 $video = $dl->download($options)->getVideos()[0];
 
