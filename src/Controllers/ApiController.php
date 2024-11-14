@@ -54,17 +54,21 @@ class ApiController extends Controller
                 $video = $dl->download(
                     Options::create()
                         ->noPlaylist()
+                        ->proxy(config('youtube-api.proxy'))
                         ->skipDownload(true)
                         ->downloadPath(self::getDownloadPath())
                         ->url($url)
                 )->getVideos()[0];
+
+                if ($video->getError() !== null)
+                    throw new Exception($video->getError());
 
                 if (is_callable($lengthLimiter))
                 {
                     $maxLength = $lengthLimiter($request);
 
                     if($video->getDuration() > $maxLength && $maxLength > 0)
-                        return response()->json(['error' => true, 'message' => "The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds."], Response::HTTP_BAD_REQUEST);
+                        throw new Exception("The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds.");
                 }
             }
             catch (Exception $ex)
