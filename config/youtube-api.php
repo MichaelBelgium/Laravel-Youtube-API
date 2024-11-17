@@ -1,6 +1,16 @@
 <?php
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Youtube API driver
+    |--------------------------------------------------------------------------
+    |
+    | This value determines which driver to use for the youtube api
+    |   Accepts:
+    |       - local (default)
+     */
+    'driver' => env('YOUTUBE_API_DRIVER', 'local'),
 
     /*
     |--------------------------------------------------------------------------
