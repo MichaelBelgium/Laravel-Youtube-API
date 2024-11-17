@@ -9,8 +9,26 @@ return [
     | This value determines which driver to use for the youtube api
     |   Accepts:
     |       - local (default)
+    |       - cobalt (requires cobalt server)
      */
     'driver' => env('YOUTUBE_API_DRIVER', 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cobalt server configuration
+    |--------------------------------------------------------------------------
+    |
+    | This value is the configuration for the cobalt driver
+    |   url: the url of the cobalt server
+    |   hls: whether to use HLS or not
+    |   auth: "Authorization" header for the cobalt server
+    |
+     */
+    'cobalt' => [
+        'url' => null,
+        'hls' => false,
+        'auth' => env('YOUTUBE_API_COBALT_AUTH'),
+    ],
 
     /*
     |--------------------------------------------------------------------------

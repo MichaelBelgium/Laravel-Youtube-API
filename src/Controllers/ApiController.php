@@ -11,16 +11,13 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use MichaelBelgium\YoutubeAPI\Drivers\IDriver;
+use MichaelBelgium\YoutubeAPI\Drivers\Cobalt;
 use MichaelBelgium\YoutubeAPI\Drivers\Local;
 use MichaelBelgium\YoutubeAPI\Models\Log;
 use MichaelBelgium\YoutubeAPI\Models\Video;
 use Symfony\Component\HttpFoundation\Response;
-use YoutubeDl\Options;
-use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
 {
@@ -48,6 +45,8 @@ class ApiController extends Controller
 
         if($selectedDriver == 'local') {
             $driver = new Local($url, $format);
+        } else if ($selectedDriver == 'cobalt') {
+            $driver = new Cobalt($url, $format);
         } else {
             return response()->json(['error' => true, 'message' => 'Invalid driver'], Response::HTTP_BAD_REQUEST);
         }
