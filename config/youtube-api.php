@@ -111,5 +111,5 @@ return [
     |       - a string representing the proxy URL
     |
     */
-    'proxy' => null,
+    'proxy' => env('YOUTUBE_API_PROXY'),
 ];
