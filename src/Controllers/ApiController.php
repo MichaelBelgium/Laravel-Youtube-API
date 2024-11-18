@@ -49,31 +49,17 @@ class ApiController extends Controller
             return response()->json(['error' => true, 'message' => 'Invalid driver'], Response::HTTP_BAD_REQUEST);
         }
 
-        $exists = File::exists(Video::getDownloadPath("$id.$format"));
-
-        if($lengthLimiter !== null || $exists)
-        {
-            try	{
-                $video = $driver->getVideoInfo();
-
-                if (is_callable($lengthLimiter))
-                {
-                    $maxLength = $lengthLimiter($request);
-
-                    if($video->getDuration() > $maxLength && $maxLength > 0)
-                        throw new Exception("The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds.");
-                }
-            }
-            catch (Exception $ex)
-            {
-                return response()->json(['error' => true, 'message' => $ex->getMessage()], Response::HTTP_BAD_REQUEST);
-            }
-        }
-
         try
         {
-            if (!$exists)
-                $video = $driver->convert();
+            $video = $driver->convert();
+
+            if($lengthLimiter !== null && is_callable($lengthLimiter))
+            {
+                $maxLength = $lengthLimiter($request);
+
+                if($video->getDuration() > $maxLength && $maxLength > 0)
+                    throw new Exception("The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds.");
+            }
 
             if(config('youtube-api.enable_logging', false) === true)
             {

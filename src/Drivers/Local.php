@@ -3,6 +3,7 @@
 namespace MichaelBelgium\YoutubeAPI\Drivers;
 
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use MichaelBelgium\YoutubeAPI\Models\Video;
 use YoutubeDl\Options;
 use YoutubeDl\YoutubeDl;
@@ -42,22 +43,13 @@ class Local implements IDriver
         else
             $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
 
-        $ytdlVideo = $this->youtubeDl->download($options)->getVideos()[0];
+        $id = Video::getVideoId($this->options->getUrl()[0]);
 
-        return $this->toVideo($ytdlVideo);
-    }
+        if (Storage::disk('public')->exists($id . '.' . $this->format))
+            $ytdlVideo = $this->getVideoWithoutDownload();
+        else
+            $ytdlVideo = $this->youtubeDl->download($options)->getVideos()[0];
 
-    public function getVideoInfo(): Video
-    {
-        $ytdlVideo = $this->youtubeDl->download(
-            $this->options->skipDownload(true)
-        )->getVideos()[0];
-
-        return $this->toVideo($ytdlVideo);
-    }
-
-    private function toVideo(\YoutubeDl\Entity\Video $ytdlVideo): Video
-    {
         if ($ytdlVideo->getError() !== null)
             throw new Exception($ytdlVideo->getError());
 
@@ -71,5 +63,14 @@ class Local implements IDriver
         $video->setDuration($ytdlVideo->getDuration());
 
         return $video;
+    }
+
+    public function getVideoWithoutDownload(): \YoutubeDl\Entity\Video
+    {
+        $ytdlVideo = $this->youtubeDl->download(
+            $this->options->skipDownload(true)
+        )->getVideos()[0];
+
+        return $ytdlVideo;
     }
 }
