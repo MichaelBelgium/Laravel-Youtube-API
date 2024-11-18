@@ -11,11 +11,9 @@ class Cobalt implements IDriver
 {
     private string $url;
     private string $format;
-    private \getID3 $getID3;
 
     public function __construct(string $url, string $format = 'mp3')
     {
-        $this->getID3 = new \getID3();
         $this->url = $url;
         $this->format = $format;
     }
@@ -44,50 +42,82 @@ class Cobalt implements IDriver
         if ($cobalt->status != 'tunnel')
             throw new Exception('This status is not supported yet');
 
-        $file = explode('_', $cobalt->filename);
-        $cobalt->filename = $file[1] . '.' . $this->format;
+        $id = Video::getVideoId($this->url);
 
-        if (!Storage::disk('public')->exists($cobalt->filename))
+        if (env('GOOGLE_API_KEY') === null)
         {
-            $success = Storage::disk('public')
-                ->put($cobalt->filename, file_get_contents($cobalt->url));
+            $file = explode('_', $cobalt->filename);
+            $cobalt->filename = $file[1] . '.' . $this->format;
 
-            if (!$success)
-                throw new Exception('Failed to save file');
+            if (!Storage::disk('public')->exists($cobalt->filename))
+            {
+                $success = Storage::disk('public')
+                    ->put($cobalt->filename, file_get_contents($cobalt->url));
+
+                if (!$success)
+                    throw new Exception('Failed to save file');
+            }
+
+            $url = Video::getDownloadUrl($cobalt->filename);
+        }
+        else
+        {
+            $url = $cobalt->url;
         }
 
-        $fileInfo = $this->getID3->analyze(Video::getDownloadPath($cobalt->filename));
+        [$title, $duration, $uploadedAt] = $this->getMetaData();
 
         $video = new Video(
-            $file[1],
-            $fileInfo['tags_html'][$this->format == 'mp3' ? 'id3v2' : 'quicktime']['title'][0],
-            Video::getDownloadUrl($cobalt->filename)
+            $id,
+            $title,
+            $url
         );
 
-        $video->setDuration($fileInfo['playtime_seconds']);
+        $video->setUploadedAt($uploadedAt);
+        $video->setDuration($duration);
 
         return $video;
     }
 
-    public function getVideoInfo(): Video
+    /**
+     * @todo use some kind of cache, to prevent multiple requests or analyzes. The chances of the video changing title or (for sure) duration are ultra low
+     */
+    private function getMetaData(): array
     {
-        $query = parse_url($this->url, PHP_URL_QUERY);
-        parse_str($query, $query_params);
-        $id = $query_params['v'];
+        $id = Video::getVideoId($this->url);
 
-        if (!Storage::disk('public')->exists($id . '.' . $this->format))
-            return $this->convert();
+        if (env('GOOGLE_API_KEY') === null)
+        {
+            $getID3 = new \getID3();
+            $fileInfo = $getID3->analyze(Video::getDownloadPath($id . '.' . $this->format));
 
-        $fileInfo = $this->getID3->analyze(Video::getDownloadPath($id . '.' . $this->format));
+            return [
+                $fileInfo['tags'][$this->format == 'mp3' ? 'id3v2' : 'quicktime']['title'][0],
+                $fileInfo['playtime_seconds'],
+                null
+            ];
+        }
+        else
+        {
+            $gClient = new \Google_Client();
+            $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
 
-        $video = new Video(
-            $id,
-            $fileInfo['tags_html'][$this->format == 'mp3' ? 'id3v2' : 'quicktime']['title'][0],
-            Video::getDownloadUrl($id . '.' . $this->format)
-        );
+            $youtube = new \Google_Service_YouTube($gClient);
+            $response = $youtube->videos->listVideos('snippet,contentDetails', ['id' => $id]);
+            $ytVideo = $response->getItems()[0] ?? null;
 
-        $video->setDuration($fileInfo['playtime_seconds']);
+            if ($ytVideo == null)
+                throw new Exception('Video not found');
 
-        return $video;
+            $duration = $ytVideo->getContentDetails()->getDuration();
+            $interval = new \DateInterval($duration);
+            $duration = ($interval->h * 60 * 60) + ($interval->i * 60) + $interval->s;
+
+            return [
+                $ytVideo->getSnippet()->getTitle(),
+                $duration,
+                new \DateTime($ytVideo->getSnippet()->getPublishedAt())
+            ];
+        }
     }
 }
