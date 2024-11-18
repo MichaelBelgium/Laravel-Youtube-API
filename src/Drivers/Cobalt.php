@@ -31,10 +31,10 @@ class Cobalt implements IDriver
             $request->withHeaders(['Authorization' => config('youtube-api.cobalt.auth')]);
 
         $response = $request->post(config('youtube-api.cobalt.url'), [
-                'url' => $this->url,
-                'downloadMode' => $this->format == 'mp3' ? 'audio' : 'auto',
-                'youtubeHLS' => config('youtube-api.cobalt.hls', false)
-            ]);
+            'url' => $this->url,
+            'downloadMode' => $this->format == 'mp3' ? 'audio' : 'auto',
+            'youtubeHLS' => config('youtube-api.cobalt.hls', false)
+        ]);
 
         if ($response->status() != 200)
             throw new Exception($response->body());

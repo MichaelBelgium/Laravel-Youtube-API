@@ -74,6 +74,12 @@ class Video
         return Storage::disk('public')->url($file);
     }
 
+    public static function getVideoId(string $url): string
+    {
+        preg_match(static::URL_REGEX, $url, $matches);
+        return $matches[0];
+    }
+
     public function toArray(): array
     {
         return [

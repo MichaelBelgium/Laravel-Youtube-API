@@ -36,9 +36,7 @@ class ApiController extends Controller
 
         $url = Arr::get($validated, 'url');
         $format = Arr::get($validated, 'format', 'mp3');
-
-        preg_match(Video::URL_REGEX, $url, $matches);
-        $id = $matches[0];
+        $id = Video::getVideoId($url);
 
         $lengthLimiter = config('youtube-api.videolength_limiter');
         $selectedDriver = config('youtube-api.driver', 'local');
