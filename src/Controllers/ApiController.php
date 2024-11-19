@@ -11,25 +11,21 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use MichaelBelgium\YoutubeAPI\Drivers\Cobalt;
+use MichaelBelgium\YoutubeAPI\Drivers\Local;
 use MichaelBelgium\YoutubeAPI\Models\Log;
+use MichaelBelgium\YoutubeAPI\Models\Video;
 use Symfony\Component\HttpFoundation\Response;
-use YoutubeDl\Options;
-use YoutubeDl\YoutubeDl;
 
 class ApiController extends Controller
 {
-    const POSSIBLE_FORMATS = ['mp3', 'mp4'];
-
     public function convert(Request $request)
     {
-        $ytRegex = '#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#';
-
         $validator = Validator::make($request->all(), [
-            'url' => ['required', 'string', 'url', 'regex:' . $ytRegex],
-            'format' => [Rule::in(self::POSSIBLE_FORMATS)]
+            'url' => ['required', 'string', 'url', 'regex:' . Video::URL_REGEX],
+            'format' => [Rule::in(Video::POSSIBLE_FORMATS)]
         ]);
 
         if($validator->fails()) {
@@ -40,87 +36,39 @@ class ApiController extends Controller
 
         $url = Arr::get($validated, 'url');
         $format = Arr::get($validated, 'format', 'mp3');
-        preg_match($ytRegex, $url, $matches);
+        $id = Video::getVideoId($url);
 
-        $id = $matches[0];
         $lengthLimiter = config('youtube-api.videolength_limiter');
-        $exists = File::exists(self::getDownloadPath($id.".".$format));
+        $selectedDriver = config('youtube-api.driver', 'local');
 
-        if($lengthLimiter !== null || $exists)
-        {
-            try	{
-                $dl = new YoutubeDl();
-
-                $video = $dl->download(
-                    Options::create()
-                        ->noPlaylist()
-                        ->proxy(config('youtube-api.proxy'))
-                        ->skipDownload(true)
-                        ->downloadPath(self::getDownloadPath())
-                        ->url($url)
-                )->getVideos()[0];
-
-                if ($video->getError() !== null)
-                    throw new Exception($video->getError());
-
-                if (is_callable($lengthLimiter))
-                {
-                    $maxLength = $lengthLimiter($request);
-
-                    if($video->getDuration() > $maxLength && $maxLength > 0)
-                        throw new Exception("The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds.");
-                }
-            }
-            catch (Exception $ex)
-            {
-                return response()->json(['error' => true, 'message' => $ex->getMessage()], Response::HTTP_BAD_REQUEST);
-            }
+        if($selectedDriver == 'local') {
+            $driver = new Local($url, $format);
+        } else if ($selectedDriver == 'cobalt') {
+            $driver = new Cobalt($url, $format);
+        } else {
+            return response()->json(['error' => true, 'message' => 'Invalid driver'], Response::HTTP_BAD_REQUEST);
         }
 
         try
         {
-            if($exists)
-                $file = self::getDownloadUrl($id.".".$format);
-            else
+            $video = $driver->convert();
+
+            if($lengthLimiter !== null && is_callable($lengthLimiter))
             {
-                $options = Options::create()
-                    ->noPlaylist()
-                    ->downloadPath(self::getDownloadPath())
-                    ->output('%(id)s.%(ext)s')
-                    ->proxy(config('youtube-api.proxy'))
-                    ->url($url);
-    
-                if($format == 'mp3')
-                {
-                    $options = $options->extractAudio(true)
-                        ->audioFormat('mp3')
-                        ->audioQuality('0');
-                    
-                    if(config('youtube-api.ffmpeg_path') !== null) {
-                        $options = $options->ffmpegLocation(config('youtube-api.ffmpeg_path'));
-                    }
-                }
-                else
-                    $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
-                
-                $dl = new YoutubeDl();
+                $maxLength = $lengthLimiter($request);
 
-                $video = $dl->download($options)->getVideos()[0];
-
-                if($video->getError() !== null)
-                    throw new Exception($video->getError());
-
-                $file = self::getDownloadUrl(File::basename($video->getFilename()));
+                if($video->getDuration() > $maxLength && $maxLength > 0)
+                    throw new Exception("The duration of the video is {$video->getDuration()} seconds while max video length is $maxLength seconds.");
             }
 
-            if(config('youtube-api.enable_logging', false) === true) 
+            if(config('youtube-api.enable_logging', false) === true)
             {
                 $log = new Log();
                 $log->youtube_id = $video->getId();
                 $log->title = $video->getTitle();
                 $log->duration = $video->getDuration();
                 $log->format = $format;
-                
+
                 if(config('youtube-api.auth') !== null)
                     $log->user()->associate(Auth::user());
 
@@ -129,12 +77,7 @@ class ApiController extends Controller
 
             return response()->json([
                 'error' => false,
-                'youtube_id' => $video->getId(),
-                'title' => $video->getTitle(),
-                'alt_title' => $video->getAltTitle(),
-                'duration' => $video->getDuration(),
-                'file' => $file,
-                'uploaded_at' => $video->getUploadDate()
+                ...$video->toArray()
             ]);
         }
         catch (Exception $e)
@@ -147,8 +90,8 @@ class ApiController extends Controller
     {
         $removedFiles = [];
 
-        foreach(self::POSSIBLE_FORMATS as $format) {
-            $localFile = self::getDownloadPath($id.'.'.$format);
+        foreach(Video::POSSIBLE_FORMATS as $format) {
+            $localFile = Video::getDownloadPath("$id.$format");
 
             if(File::exists($localFile)) {
                 File::delete($localFile);
@@ -156,7 +99,7 @@ class ApiController extends Controller
             }
         }
 
-        $resultNotRemoved = array_diff(self::POSSIBLE_FORMATS, $removedFiles);
+        $resultNotRemoved = array_diff(Video::POSSIBLE_FORMATS, $removedFiles);
 
         if(empty($removedFiles))
             $message = 'No files removed.';
@@ -230,13 +173,5 @@ class ApiController extends Controller
         }
     }
 
-    public static function getDownloadPath(string $file = '')
-    {
-        return Storage::disk('public')->path($file);
-    }
 
-    public static function getDownloadUrl(string $file = '')
-    {
-        return Storage::disk('public')->url($file);
-    }
 }

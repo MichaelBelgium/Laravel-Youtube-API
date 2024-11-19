@@ -21,6 +21,7 @@
     "require": {
         "google/apiclient": "^2.4",
         "illuminate/support": "^8.0|^9.0|^10.0",
+        "james-heinrich/getid3": "^1.9",
         "norkunas/youtube-dl-php": "^2.0"
     },
     "require-dev": {
