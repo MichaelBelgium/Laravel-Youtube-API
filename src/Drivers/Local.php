@@ -67,6 +67,7 @@ class Local implements IDriver
 
     public function getVideoWithoutDownload(): \YoutubeDl\Entity\Video
     {
+        //todo kinda same as /info endpoint
         $ytdlVideo = $this->youtubeDl->download(
             $this->options->skipDownload(true)
         )->getVideos()[0];

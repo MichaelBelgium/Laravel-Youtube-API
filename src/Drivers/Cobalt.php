@@ -99,6 +99,7 @@ class Cobalt implements IDriver
         }
         else
         {
+            //todo same as /info endpoint
             $gClient = new \Google_Client();
             $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
 

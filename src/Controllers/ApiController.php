@@ -36,7 +36,6 @@ class ApiController extends Controller
 
         $url = Arr::get($validated, 'url');
         $format = Arr::get($validated, 'format', 'mp3');
-        $id = Video::getVideoId($url);
 
         $lengthLimiter = config('youtube-api.videolength_limiter');
         $selectedDriver = config('youtube-api.driver', 'local');
@@ -112,10 +111,56 @@ class ApiController extends Controller
         return response()->json(['error' => false, 'message' => $message]);
     }
 
+    public function info(Request $request)
+    {
+        if(empty(env('GOOGLE_API_KEY'))) {
+            return response()->json(['error' => true, 'message' => 'No google api key specified'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $query = $request->get('query', $request->get('q'));
+
+        if(empty($query)) {
+            return response()->json(['error' => true, 'message' => 'No query specified'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (filter_var($query, FILTER_VALIDATE_URL))
+            $id = Video::getVideoId($query);
+        else
+            $id = $query;
+
+        $gClient = new \Google_Client();
+        $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
+
+        $youtube = new \Google_Service_YouTube($gClient);
+        $response = $youtube->videos->listVideos('snippet,contentDetails', ['id' => $id]);
+        $ytVideo = $response->getItems()[0] ?? null;
+
+        if ($ytVideo == null) {
+            return response()->json(['error' => true, 'message' => 'Video not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $duration = $ytVideo->getContentDetails()->getDuration();
+        $interval = new \DateInterval($duration);
+        $duration = ($interval->h * 60 * 60) + ($interval->i * 60) + $interval->s;
+
+        return response()->json([
+            'error' => false,
+            'id' => $id,
+            'url' => 'https://youtube.com/watch?v='.$id,
+            'channel_url' => 'https://youtube.com/channel/'.$ytVideo->getSnippet()->getChannelId(),
+            'channel_id' => $ytVideo->getSnippet()->getChannelId(),
+            'channel' => $ytVideo->getSnippet()->getChannelTitle(),
+            'title' => $ytVideo->getSnippet()->getTitle(),
+            'duration' => $duration,
+            'description' => $ytVideo->getSnippet()->getDescription(),
+            'published_at' => $ytVideo->getSnippet()->getPublishedAt()
+        ]);
+    }
+
     public function search(Request $request)
     {
         if(empty(env('GOOGLE_API_KEY'))) {
-            return response()->json(['error' => true, 'message' => 'No google api specified'], Response::HTTP_BAD_REQUEST);
+            return response()->json(['error' => true, 'message' => 'No google api key specified'], Response::HTTP_BAD_REQUEST);
         }
 
         $validator = Validator::make($request->all(), [
