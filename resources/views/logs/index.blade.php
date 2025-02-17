@@ -38,11 +38,11 @@
                         <td>{{ $log->format }}</td>
                         <td>
                             @php
-                                $path = MichaelBelgium\YoutubeAPI\Controllers\ApiController::getDownloadPath($log->youtube_id.".".$log->format);
+                                $path = \MichaelBelgium\YoutubeAPI\Models\Video::getDownloadPath($log->youtube_id.".".$log->format);
                             @endphp
                             @if (File::exists($path))
                                 @php
-                                    $url = MichaelBelgium\YoutubeAPI\Controllers\ApiController::getDownloadUrl($log->youtube_id.".".$log->format);
+                                    $url = \MichaelBelgium\YoutubeAPI\Models\Video::getDownloadUrl($log->youtube_id.".".$log->format);
                                 @endphp
                                 <a href="{{ $url }}" target="_blank">Converted file</a>
                             @else
