@@ -30,6 +30,9 @@ class Local implements IDriver
     {
         $options = $this->options->output('%(id)s.%(ext)s');
 
+        if (Storage::disk('local')->exists('cookies.txt'))
+            $options = $options->cookies(Storage::disk('local')->path('cookies.txt'));
+
         if($this->format == 'mp3')
         {
             $options = $options->extractAudio(true)
