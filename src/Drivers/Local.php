@@ -73,6 +73,10 @@ class Local implements IDriver
         //todo kinda same as /info endpoint
         $ytdlVideo = $this->youtubeDl->download(
             $this->options->skipDownload(true)
+                ->cookies(Storage::disk('local')->exists('cookies.txt') ?
+                    Storage::disk('local')->path('cookies.txt') :
+                    null
+                )
         )->getVideos()[0];
 
         return $ytdlVideo;
