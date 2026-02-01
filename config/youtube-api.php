@@ -86,9 +86,24 @@ return [
     |
     | The location of the ffmpeg executable in case when manually build in stead of yum install or apt-get install
     |
+    | Used in LOCAL driver only
+    |
     */
 
     'ffmpeg_path' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Binary path
+    |--------------------------------------------------------------------------
+    |
+    | The location of the yt-dlp or youtube-dl executable.
+    |
+    | Used in LOCAL driver only
+    |
+     */
+
+    'bin_path' => null,
 
     /*
     |--------------------------------------------------------------------------

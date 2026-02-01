@@ -17,6 +17,8 @@ class Local implements IDriver
     public function __construct(string $url, string $format = 'mp3')
     {
         $this->youtubeDl = new YoutubeDl();
+        $this->youtubeDl->setBinPath(config('youtube-api.bin_path'));
+
         $this->format = $format;
 
         $this->options = Options::create()
@@ -71,14 +73,12 @@ class Local implements IDriver
     public function getVideoWithoutDownload(): \YoutubeDl\Entity\Video
     {
         //todo kinda same as /info endpoint
-        $ytdlVideo = $this->youtubeDl->download(
+        return $this->youtubeDl->download(
             $this->options->skipDownload(true)
                 ->cookies(Storage::disk('local')->exists('cookies.txt') ?
                     Storage::disk('local')->path('cookies.txt') :
                     null
                 )
         )->getVideos()[0];
-
-        return $ytdlVideo;
     }
 }
