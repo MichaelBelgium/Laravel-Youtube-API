@@ -39,7 +39,8 @@
         }
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "process-timeout": 600
     },
     "extra": {
         "laravel": {

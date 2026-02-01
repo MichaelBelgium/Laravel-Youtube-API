@@ -2,8 +2,7 @@
 namespace MichaelBelgium\YoutubeAPI\Controllers;
 
 use Exception;
-use Google_Client;
-use Google_Service_YouTube;
+use Google\Service\YouTube;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Http\Request;
@@ -128,10 +127,10 @@ class ApiController extends Controller
         else
             $id = $query;
 
-        $gClient = new \Google_Client();
+        $gClient = new \Google\Client();
         $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
 
-        $youtube = new \Google_Service_YouTube($gClient);
+        $youtube = new YouTube($gClient);
         $response = $youtube->videos->listVideos('snippet,contentDetails', ['id' => $id]);
         $ytVideo = $response->getItems()[0] ?? null;
 
@@ -139,8 +138,7 @@ class ApiController extends Controller
             return response()->json(['error' => true, 'message' => 'Video not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $duration = $ytVideo->getContentDetails()->getDuration();
-        $interval = new \DateInterval($duration);
+        $interval = new \DateInterval($ytVideo->getContentDetails()->getDuration());
         $duration = ($interval->h * 60 * 60) + ($interval->i * 60) + $interval->s;
 
         return response()->json([
@@ -178,7 +176,7 @@ class ApiController extends Controller
         $q = $data['q'];
         $max_results = $data['max_results'] ?? config('youtube-api.search_max_results', 10);
 
-        $gClient = new Google_Client();
+        $gClient = new \Google\Client();
         $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
 
         $guzzleClient = new Client([
@@ -189,7 +187,7 @@ class ApiController extends Controller
 
         $gClient->setHttpClient($guzzleClient);
 
-        $ytService = new Google_Service_YouTube($gClient);
+        $ytService = new YouTube($gClient);
 
         try {
             $search = $ytService->search->listSearch('id,snippet', [
