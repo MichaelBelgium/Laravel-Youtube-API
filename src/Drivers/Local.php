@@ -4,6 +4,7 @@ namespace MichaelBelgium\YoutubeAPI\Drivers;
 
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use MichaelBelgium\YoutubeAPI\CustomProcessBuilder;
 use MichaelBelgium\YoutubeAPI\Models\Video;
 use YoutubeDl\Options;
 use YoutubeDl\YoutubeDl;
@@ -16,7 +17,7 @@ class Local implements IDriver
 
     public function __construct(string $url, string $format = 'mp3')
     {
-        $this->youtubeDl = new YoutubeDl();
+        $this->youtubeDl = new YoutubeDl(new CustomProcessBuilder());
         $this->youtubeDl->setBinPath(config('youtube-api.local.bin_path'));
 
         $this->format = $format;
