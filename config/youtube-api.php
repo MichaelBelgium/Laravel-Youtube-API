@@ -15,10 +15,9 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cobalt server configuration
+    | Cobalt driver configuration
     |--------------------------------------------------------------------------
     |
-    | This value is the configuration for the cobalt driver
     |   url: the url of the cobalt server
     |   hls: whether to use HLS or not
     |   auth: "Authorization" header for the cobalt server
@@ -28,6 +27,19 @@ return [
         'url' => null,
         'hls' => false,
         'auth' => env('YOUTUBE_API_COBALT_AUTH'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Local driver configuration
+    |--------------------------------------------------------------------------
+    |
+    |   bin_path: The location of the yt-dlp or youtube-dl executable.
+    |   ffmpeg_path: The location of the ffmpeg executable in case when manually build in stead of yum install or apt-get install
+     */
+    'local' => [
+        'bin_path' => null,
+        'ffmpeg_path' => null,
     ],
 
     /*
@@ -78,32 +90,6 @@ return [
     */
 
     'search_max_results' => 10,
-
-    /*
-    |--------------------------------------------------------------------------
-    | FFMPEG bin path
-    |--------------------------------------------------------------------------
-    |
-    | The location of the ffmpeg executable in case when manually build in stead of yum install or apt-get install
-    |
-    | Used in LOCAL driver only
-    |
-    */
-
-    'ffmpeg_path' => null,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Binary path
-    |--------------------------------------------------------------------------
-    |
-    | The location of the yt-dlp or youtube-dl executable.
-    |
-    | Used in LOCAL driver only
-    |
-     */
-
-    'bin_path' => null,
 
     /*
     |--------------------------------------------------------------------------

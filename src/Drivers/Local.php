@@ -17,7 +17,7 @@ class Local implements IDriver
     public function __construct(string $url, string $format = 'mp3')
     {
         $this->youtubeDl = new YoutubeDl();
-        $this->youtubeDl->setBinPath(config('youtube-api.bin_path'));
+        $this->youtubeDl->setBinPath(config('youtube-api.local.bin_path'));
 
         $this->format = $format;
 
@@ -39,11 +39,8 @@ class Local implements IDriver
         {
             $options = $options->extractAudio(true)
                 ->audioFormat('mp3')
-                ->audioQuality('0');
-
-            if(config('youtube-api.ffmpeg_path') !== null) {
-                $options = $options->ffmpegLocation(config('youtube-api.ffmpeg_path'));
-            }
+                ->audioQuality('0')
+                ->ffmpegLocation(config('youtube-api.local.ffmpeg_path'));
         }
         else
             $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
