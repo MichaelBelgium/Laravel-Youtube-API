@@ -37,11 +37,18 @@ return [
     |   bin_path: The location of the yt-dlp or youtube-dl executable.
     |   ffmpeg_path: The location of the ffmpeg executable in case when manually build in stead of yum install or apt-get install
     |   js-runtime (yt-dlp only): The js runtime to use (https://github.com/yt-dlp/yt-dlp/wiki/EJS#external-js-scripts-setup-guide)
+    |   cache:
+    |       store: The cache store to use for caching video information. If null, caching is disabled.
+    |       duration: The duration to cache video information for, in seconds.
      */
     'local' => [
         'bin_path' => null,
         'ffmpeg_path' => null,
         'js-runtime' => null,
+        'cache' => [
+            'store' => null,
+            'duration' => null,
+        ],
     ],
 
     /*
