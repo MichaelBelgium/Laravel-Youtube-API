@@ -4,15 +4,15 @@ namespace MichaelBelgium\YoutubeAPI\Drivers;
 
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use MichaelBelgium\YoutubeAPI\CustomOptions;
 use MichaelBelgium\YoutubeAPI\CustomProcessBuilder;
 use MichaelBelgium\YoutubeAPI\Models\Video;
-use YoutubeDl\Options;
 use YoutubeDl\YoutubeDl;
 
 class Local implements IDriver
 {
     private YoutubeDl $youtubeDl;
-    private Options $options;
+    private CustomOptions $options;
     private string $format;
 
     public function __construct(string $url, string $format = 'mp3')
@@ -22,7 +22,7 @@ class Local implements IDriver
 
         $this->format = $format;
 
-        $this->options = Options::create()
+        $this->options = CustomOptions::create()
             ->noPlaylist()
             ->downloadPath(Video::getDownloadPath())
             ->proxy(config('youtube-api.proxy'))
@@ -38,13 +38,14 @@ class Local implements IDriver
 
         if($this->format == 'mp3')
         {
-            $options = $options->extractAudio(true)
-                ->audioFormat('mp3')
-                ->audioQuality('0')
+            $options = $options->presetAlias('mp3')
                 ->ffmpegLocation(config('youtube-api.local.ffmpeg_path'));
         }
         else
-            $options = $options->format('bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best');
+            $options = $options->presetAlias('mp4');
+
+        if (config('youtube-api.local.js-runtime') !== null)
+            $options = $options->jsRuntimes(config('youtube-api.local.js-runtime'));
 
         $id = Video::getVideoId($this->options->getUrl()[0]);
 

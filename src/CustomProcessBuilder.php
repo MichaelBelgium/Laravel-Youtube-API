@@ -37,10 +37,6 @@ class CustomProcessBuilder implements ProcessBuilderInterface
             array_unshift($arguments, $pythonPath);
         }
 
-        if (config('youtube-api.local.js-runtime') !== null) {
-            $arguments[] = '--js-runtimes=' . config('youtube-api.local.js-runtime');
-        }
-
         Log::debug('['.__CLASS__.'] ' . implode(' ', $arguments));
 
         $process = new Process($arguments);
