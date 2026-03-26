@@ -2,6 +2,7 @@
 
 namespace MichaelBelgium\YoutubeAPI;
 
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use YoutubeDl\Process\ProcessBuilderInterface;
@@ -39,6 +40,8 @@ class CustomProcessBuilder implements ProcessBuilderInterface
         if (config('youtube-api.local.js-runtime') !== null) {
             $arguments[] = '--js-runtimes=' . config('youtube-api.local.js-runtime');
         }
+
+        Log::debug('['.__CLASS__.'] ' . implode(' ', $arguments));
 
         $process = new Process($arguments);
         $process->setTimeout(null);
