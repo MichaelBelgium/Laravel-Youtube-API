@@ -3,6 +3,7 @@
 namespace MichaelBelgium\YoutubeAPI\Drivers;
 
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use MichaelBelgium\YoutubeAPI\CustomOptions;
 use MichaelBelgium\YoutubeAPI\CustomProcessBuilder;
@@ -49,9 +50,21 @@ class Local implements IDriver
             $options = $options->jsRuntimes(config('youtube-api.local.js-runtime'));
 
         $id = Video::getVideoId($this->options->getUrl()[0]);
+        $cacheKey = "video_info:$id";
 
         if (Storage::disk('public')->exists($id . '.' . $this->format))
+        {
+            if (config('youtube-api.local.cache.store') !== null)
+            {
+                $cache = Cache::store(config('youtube-api.local.cache.store'));
+
+                if ($cache->has($cacheKey)) {
+                    return $cache->get($cacheKey);
+                }
+            }
+
             $ytdlVideo = $this->getVideoWithoutDownload();
+        }
         else
             $ytdlVideo = $this->youtubeDl->download($options)->getVideos()[0];
 
@@ -66,6 +79,12 @@ class Local implements IDriver
 
         $video->setUploadedAt($ytdlVideo->getUploadDate());
         $video->setDuration($ytdlVideo->getDuration());
+
+        if (config('youtube-api.local.cache.store') !== null)
+        {
+            Cache::store(config('youtube-api.local.cache.store'))
+                ->put($cacheKey, $video, config('youtube-api.local.cache.duration'));
+        }
 
         return $video;
     }
