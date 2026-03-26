@@ -26,15 +26,16 @@ class Local implements IDriver
             ->noPlaylist()
             ->downloadPath(Video::getDownloadPath())
             ->proxy(config('youtube-api.proxy'))
-            ->url($url);
+            ->cookies(
+                Storage::disk('local')->exists('cookies.txt') ?
+                Storage::disk('local')->path('cookies.txt') :
+                null
+            )->url($url);
     }
 
     public function convert(): Video
     {
         $options = $this->options->output('%(id)s.%(ext)s');
-
-        if (Storage::disk('local')->exists('cookies.txt'))
-            $options = $options->cookies(Storage::disk('local')->path('cookies.txt'));
 
         if($this->format == 'mp3')
         {
@@ -74,10 +75,6 @@ class Local implements IDriver
         //todo kinda same as /info endpoint
         return $this->youtubeDl->download(
             $this->options->skipDownload(true)
-                ->cookies(Storage::disk('local')->exists('cookies.txt') ?
-                    Storage::disk('local')->path('cookies.txt') :
-                    null
-                )
         )->getVideos()[0];
     }
 }
