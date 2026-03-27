@@ -24,7 +24,7 @@ return [
     |
      */
     'cobalt' => [
-        'url' => null,
+        'url' => env('YOUTUBE_API_COBALT_URL'),
         'hls' => false,
         'auth' => env('YOUTUBE_API_COBALT_AUTH'),
     ],
