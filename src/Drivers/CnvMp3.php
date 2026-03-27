@@ -12,7 +12,6 @@ class CnvMp3 implements IDriver
 {
     private const ENDPOINT = 'https://cnvmp3.com';
     private PendingRequest $request;
-    private int $attempts = 0;
     private string $youtubeId;
 
     public function __construct(
@@ -40,26 +39,40 @@ class CnvMp3 implements IDriver
 
         if (!$reqCheckDb->ok() || !$reqCheckDb->json('success'))
         {
-            // The site should trigger get_video_data.php, download_video_ucep.php and insert_to_database.php in the background, so we can just wait and check again
-            $this->attempts++;
-
-            Log::debug('['. __CLASS__ .'] Video not found in database, retrying ...');
+            Log::debug('['. __CLASS__ .'] Video not found in database');
             Log::debug($reqCheckDb->json('error'));
 
-            sleep(5);
+            $reqVideoData = $this->request->post(self::ENDPOINT . '/get_video_data.php', [
+                'token' => '1234',
+                'url' => $this->url,
+            ]);
 
-            if ($this->attempts > 3)
-                throw new \Exception('Failed to convert video after multiple attempts');
+            if (!$reqVideoData->ok() || !$reqVideoData->json('success'))
+                throw new \Exception('Failed to get video data');
 
-            return $this->convert();
+            $title = $reqVideoData->json('title');
+
+            $reqVideoDownload = $this->request->post(self::ENDPOINT . '/download_video_ucep.php', [
+                'quality' => $this->format == 'mp4' ? 1000 : 0,
+                'formatValue' => $this->format == 'mp4' ? 0 : 1,
+                'title' => $title,
+                'url' => $this->url,
+            ]);
+
+            if (!$reqVideoDownload->ok() || !$reqVideoDownload->json('success'))
+                throw new \Exception('Failed to get video download url');
+
+            $stream = $reqVideoDownload->json('download_link');
         }
-
-        $title = $reqCheckDb->json('data.title');
+        else
+        {
+            $stream = $reqCheckDb->json('data.server_path');
+            $title = $reqCheckDb->json('data.title');
+        }
 
         if (!Storage::disk('public')->exists($this->youtubeId . '.' . $this->format))
         {
             // The stream url that's included in the response doesn't actually work, can't stream it directly so we have to download it and serve it ourselves
-            $stream = $reqCheckDb->json('data.server_path');
             $file = $this->request->get($stream);
 
             $success = Storage::disk('public')
