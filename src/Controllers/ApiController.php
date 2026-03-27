@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use MichaelBelgium\YoutubeAPI\Drivers\CnvMp3;
 use MichaelBelgium\YoutubeAPI\Drivers\Cobalt;
+use MichaelBelgium\YoutubeAPI\Drivers\IDriver;
 use MichaelBelgium\YoutubeAPI\Drivers\Local;
 use MichaelBelgium\YoutubeAPI\Models\Log;
 use MichaelBelgium\YoutubeAPI\Models\Video;
@@ -39,11 +41,15 @@ class ApiController extends Controller
         $lengthLimiter = config('youtube-api.videolength_limiter');
         $selectedDriver = config('youtube-api.driver', 'local');
 
-        if($selectedDriver == 'local') {
-            $driver = new Local($url, $format);
-        } else if ($selectedDriver == 'cobalt') {
-            $driver = new Cobalt($url, $format);
-        } else {
+        /** @var ?IDriver $driver */
+        $driver = match($selectedDriver) {
+            'local' => new Local($url, $format),
+            'cobalt' => new Cobalt($url, $format),
+            'cnvmp3' => new CnvMp3($url, $format),
+             default => null
+        };
+
+        if ($driver === null) {
             return response()->json(['error' => true, 'message' => 'Invalid driver'], Response::HTTP_BAD_REQUEST);
         }
 

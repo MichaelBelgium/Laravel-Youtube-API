@@ -1,0 +1,121 @@
+<?php
+
+namespace MichaelBelgium\YoutubeAPI\Drivers;
+
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use MichaelBelgium\YoutubeAPI\Models\Video;
+
+class CnvMp3 implements IDriver
+{
+    private const ENDPOINT = 'https://cnvmp3.com';
+    private PendingRequest $request;
+    private int $attempts = 0;
+    private string $youtubeId;
+
+    public function __construct(
+        private readonly string $url,
+        private readonly string $format = 'mp3'
+    ) {
+        $this->youtubeId = Video::getVideoId($this->url);
+
+        $this->request = Http::withHeaders([
+            'Origin' => self::ENDPOINT,
+            'Referer' => self::ENDPOINT . '/v53',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36'
+        ]);
+    }
+
+    public function convert(): Video
+    {
+        //Perhaps uses cobalt in the background; https://api.cnvmp3.com/
+
+        $reqCheckDb = $this->request->post(self::ENDPOINT . '/check_database.php', [
+            'youtube_id' => $this->youtubeId,
+            'quality' => $this->format == 'mp4' ? 1000 : 0,
+            'formatValue' => $this->format == 'mp4' ? 0 : 1
+        ]);
+
+        if (!$reqCheckDb->ok() || !$reqCheckDb->json('success'))
+        {
+            // The site should trigger get_video_data.php, download_video_ucep.php and insert_to_database.php in the background, so we can just wait and check again
+            $this->attempts++;
+
+            Log::debug('['. __CLASS__ .'] Video not found in database, retrying ...');
+            Log::debug($reqCheckDb->json('error'));
+
+            sleep(5);
+
+            if ($this->attempts > 3)
+                throw new \Exception('Failed to convert video after multiple attempts');
+
+            return $this->convert();
+        }
+
+        $title = $reqCheckDb->json('data.title');
+
+        if (!Storage::disk('public')->exists($this->youtubeId . '.' . $this->format))
+        {
+            // The stream url that's included in the response doesn't actually work, can't stream it directly so we have to download it and serve it ourselves
+            $stream = $reqCheckDb->json('data.server_path');
+            $file = $this->request->get($stream);
+
+            $success = Storage::disk('public')
+                ->put($this->youtubeId . '.' . $this->format, $file->body());
+
+            if (!$success)
+                throw new \Exception('Failed to save file');
+        }
+
+        $video = new Video(
+            $this->youtubeId,
+            $title,
+            Video::getDownloadUrl($this->youtubeId . '.' . $this->format),
+        );
+
+        [$duration, $uploadedAt] = $this->getMetaData();
+        $video->setDuration($duration);
+        $video->setUploadedAt($uploadedAt);
+
+        return $video;
+    }
+
+    // Todo: duplicate of function in Cobalt driver
+    private function getMetaData(): array
+    {
+        if (env('GOOGLE_API_KEY') === null)
+        {
+            $getID3 = new \getID3();
+            $fileInfo = $getID3->analyze(Video::getDownloadPath($this->youtubeId . '.' . $this->format));
+
+            return [
+                $fileInfo['playtime_seconds'],
+                null
+            ];
+        }
+        else
+        {
+            //todo same as /info endpoint
+            $gClient = new \Google_Client();
+            $gClient->setDeveloperKey(env('GOOGLE_API_KEY'));
+
+            $youtube = new \Google_Service_YouTube($gClient);
+            $response = $youtube->videos->listVideos('snippet,contentDetails', ['id' => $this->youtubeId]);
+            $ytVideo = $response->getItems()[0] ?? null;
+
+            if ($ytVideo == null)
+                throw new \Exception('Video not found');
+
+            $duration = $ytVideo->getContentDetails()->getDuration();
+            $interval = new \DateInterval($duration);
+            $duration = ($interval->h * 60 * 60) + ($interval->i * 60) + $interval->s;
+
+            return [
+                $duration,
+                new \DateTime($ytVideo->getSnippet()->getPublishedAt())
+            ];
+        }
+    }
+}

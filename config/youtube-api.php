@@ -10,6 +10,7 @@ return [
     |   Accepts:
     |       - local (default)
     |       - cobalt (requires cobalt server)
+    |       - cnvmp3 (In case local and cobalt driver isn't an option; uses cnvmp3.com to convert videos, but downloads and serves it locally)
      */
     'driver' => env('YOUTUBE_API_DRIVER', 'local'),
 
