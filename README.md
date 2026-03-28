@@ -61,8 +61,13 @@ The default driver. Requires ffmpeg and yt-dlp or youtube-dl to be installed on 
 
 * cobalt
 
-Requires a self hosted [Cobalt](https://github.com/imputnet/cobalt) (API) instance. It doesn't require any software to be installed on the server and it doesn't download files to the server.
-If `GOOGLE_API_KEY` is set, it'll use the Youtube Data API to get metadata, otherwise it'll download the video to get the metadata and thus use storage space instead.
+Requires a (self) hosted [Cobalt](https://github.com/imputnet/cobalt) (API) instance. It doesn't require any software to be installed on the server and it doesn't download files to the server.
+If `GOOGLE_API_KEY` is set, it'll use the Youtube Data API to get metadata, otherwise it **will** download the video to get the metadata and thus use storage space instead.
+
+* cnvmp3
+
+Uses [cnvmp3.com](https://cnvmp3.com) to convert the files and downloads them to this instance. It doesn't require any software to be installed on the server.
+If `GOOGLE_API_KEY` is set, it'll use the Youtube Data API to get metadata, otherwise it'll use getid3. 
 
 ## API authorization
 
