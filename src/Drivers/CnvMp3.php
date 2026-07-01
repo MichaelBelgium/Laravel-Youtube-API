@@ -22,8 +22,8 @@ class CnvMp3 implements IDriver
 
         $this->request = Http::withHeaders([
             'Origin' => self::ENDPOINT,
-            'Referer' => self::ENDPOINT . '/v53',
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36'
+            'Referer' => self::ENDPOINT . '/v55',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'
         ]);
     }
 
@@ -73,7 +73,9 @@ class CnvMp3 implements IDriver
         if (!Storage::disk('public')->exists($this->youtubeId . '.' . $this->format))
         {
             // The stream url that's included in the response doesn't actually work, can't stream it directly so we have to download it and serve it ourselves
-            $file = $this->request->get($stream);
+            $file = $this->request->withHeaders([
+                'Referer' => self::ENDPOINT,
+            ])->get($stream);
 
             $success = Storage::disk('public')
                 ->put($this->youtubeId . '.' . $this->format, $file->body());
